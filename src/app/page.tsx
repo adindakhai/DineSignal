@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button"; // Import Button dari ShadCN
 
 const LandingPage = () => {
   const router = useRouter();
@@ -65,18 +66,19 @@ const LandingPage = () => {
           Dine<span className="text-[#CDC69A]">Signal</span>
         </div>
         <nav className="space-x-6 text-sm uppercase">
-          <button
+          <Button
             onClick={() => router.push("/login")}
+            variant="ghost"
             className="text-[#D9D1BE] hover:text-[#CDC69A] transition"
           >
             Log In
-          </button>
-          <button
+          </Button>
+          <Button
             onClick={() => router.push("/signup")}
             className="px-4 py-2 bg-[#CDC69A] text-[#290102] rounded-full font-semibold hover:bg-[#D9D1BE] transition"
           >
             Sign Up
-          </button>
+          </Button>
         </nav>
       </motion.header>
 
@@ -101,13 +103,14 @@ const LandingPage = () => {
           Discover top-rated restaurants tailored to your taste, budget, and
           location.
         </motion.p>
-        <motion.button
-          onClick={() => router.push("/signup")}
-          className="mt-8 bg-[#CDC69A] text-[#290102] px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-xl hover:bg-[#D9D1BE] transition"
-          {...hoverEffect}
-        >
-          Get Started
-        </motion.button>
+        <motion.div {...hoverEffect}>
+          <Button
+            onClick={() => router.push("/signup")}
+            className="mt-8 bg-[#CDC69A] text-[#290102] px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-xl hover:bg-[#D9D1BE] transition"
+          >
+            Get Started
+          </Button>
+        </motion.div>
       </motion.section>
 
       {/* Top Picks Section */}
@@ -140,64 +143,15 @@ const LandingPage = () => {
                   </CardDescription>
                 </CardContent>
                 <CardFooter className="p-6">
-                  <button className="bg-[#CDC69A] text-[#290102] px-4 py-2 rounded-full font-bold hover:bg-[#D9D1BE] transition">
+                  <Button className="bg-[#CDC69A] text-[#290102] px-4 py-2 rounded-full font-bold hover:bg-[#D9D1BE] transition">
                     Explore
-                  </button>
+                  </Button>
                 </CardFooter>
               </Card>
             </motion.div>
           ))}
         </div>
       </section>
-
-      {/* Features Section */}
-      <motion.section
-        className="py-16 px-6"
-        id="features"
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, amount: 0.3 }}
-        variants={{
-          hidden: { opacity: 0, y: 30 },
-          show: { opacity: 1, y: 0, transition: { staggerChildren: 0.2 } },
-        }}
-      >
-        <h2 className="text-4xl font-bold text-center mb-12 text-[#D9D1BE]">
-          Why Choose Us
-        </h2>
-        <div className="grid md:grid-cols-3 gap-10 max-w-5xl mx-auto">
-          {[
-            {
-              title: "Nearby Search",
-              text: "Locate top restaurants within minutes from your location.",
-            },
-            {
-              title: "Smart Filters",
-              text: "Customize results by price, cuisine, and user reviews.",
-            },
-            {
-              title: "Seamless Experience",
-              text: "Fast, intuitive, and user-friendly.",
-            },
-          ].map((feature, index) => (
-            <motion.div
-              key={index}
-              className="rounded-lg shadow-xl hover:shadow-2xl transform transition duration-300 hover:scale-105 
-                         bg-[#1F1F1F]/80 border border-[#D9D1BE]/30 p-8"
-              variants={{
-                hidden: { opacity: 0, y: 30 },
-                show: { opacity: 1, y: 0 },
-              }}
-              transition={{ duration: 0.5 }}
-            >
-              <h3 className="text-2xl font-semibold mb-4 text-[#D9D1BE] flex items-center gap-2">
-                <span>🌟</span> {feature.title}
-              </h3>
-              <p className="text-sm text-[#D9D1BE]">{feature.text}</p>
-            </motion.div>
-          ))}
-        </div>
-      </motion.section>
 
       {/* Footer */}
       <footer className="py-10 bg-[#290102] text-center text-sm text-[#D9D1BE] space-y-4">
