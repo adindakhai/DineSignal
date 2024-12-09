@@ -1,20 +1,37 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Swiper, SwiperSlide } from "swiper/react";
-import "swiper/css";
-import "swiper/css/autoplay";
-import { Autoplay } from "swiper/modules";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 const LandingPage = () => {
   const router = useRouter();
 
-  const images = [
-    "/images/resto1.jpg",
-    "/images/resto2.jpg",
-    "/images/resto3.jpg",
-    "/images/resto4.jpg",
-    "/images/resto5.jpg",
+  const cafes = [
+    {
+      name: "Cafe Mocha",
+      location: "Downtown",
+      image: "/images/resto1.jpg",
+      description: "Cozy atmosphere and great coffee.",
+    },
+    {
+      name: "The French Bistro",
+      location: "Uptown",
+      image: "/images/resto2.jpg",
+      description: "Authentic French cuisine and pastries.",
+    },
+    {
+      name: "Sushi Paradise",
+      location: "Midtown",
+      image: "/images/resto3.jpg",
+      description: "Fresh sushi and sashimi served daily.",
+    },
   ];
 
   const fadeIn = {
@@ -36,7 +53,7 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-[#290102] via-[#442C2E] to-[#F2E8D0] text-[#290102] font-sans">
+    <div className="min-h-screen bg-gradient-to-tr from-[#290102] via-[#442C2E] to-[#F2E8D0] bg-fixed bg-no-repeat text-[#290102] font-sans">
       {/* Header */}
       <motion.header
         className="sticky top-0 mx-auto bg-opacity-90 backdrop-blur-md bg-[#290102]/80 z-50 px-6 py-3 flex justify-between items-center shadow-md"
@@ -93,50 +110,62 @@ const LandingPage = () => {
         </motion.button>
       </motion.section>
 
-      {/* Auto-Slider Section */}
-      <section className="relative py-16">
-        <h2 className="text-4xl font-bold text-center mb-8 text-[#D9D1BE]">
+      {/* Top Picks Section */}
+      <section className="py-16 px-6">
+        <h2 className="text-4xl font-bold text-center mb-12 text-[#D9D1BE]">
           Top Picks for You
         </h2>
-        <Swiper
-          modules={[Autoplay]}
-          autoplay={{ delay: 3000 }}
-          loop
-          spaceBetween={30}
-          slidesPerView={1}
-          className="max-w-5xl mx-auto"
-        >
-          {images.map((image, index) => (
-            <SwiperSlide key={index}>
-              <div className="relative rounded-xl overflow-hidden shadow-lg">
-                <img
-                  src={image}
-                  alt={`Slide ${index + 1}`}
-                  className="w-full h-[400px] object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/30 to-black/70 flex items-end p-6">
-                  <p className="text-white text-lg font-bold">
-                    Restaurant {index + 1}
-                  </p>
-                </div>
-              </div>
-            </SwiperSlide>
+        <div className="grid md:grid-cols-3 gap-10 max-w-7xl mx-auto">
+          {cafes.map((cafe, index) => (
+            <motion.div
+              key={index}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="rounded-lg overflow-hidden shadow-lg bg-[#1F1F1F]/80 border border-[#D9D1BE]/30"
+            >
+              <Card>
+                <CardHeader className="p-0">
+                  <img
+                    src={cafe.image}
+                    alt={cafe.name}
+                    className="w-full h-[200px] object-cover"
+                  />
+                </CardHeader>
+                <CardContent className="p-6 text-[#D9D1BE]">
+                  <CardTitle className="text-xl font-semibold mb-2">
+                    {cafe.name}
+                  </CardTitle>
+                  <CardDescription className="text-sm">
+                    {cafe.description}
+                  </CardDescription>
+                </CardContent>
+                <CardFooter className="p-6">
+                  <button className="bg-[#CDC69A] text-[#290102] px-4 py-2 rounded-full font-bold hover:bg-[#D9D1BE] transition">
+                    Explore
+                  </button>
+                </CardFooter>
+              </Card>
+            </motion.div>
           ))}
-        </Swiper>
+        </div>
       </section>
 
       {/* Features Section */}
       <motion.section
         className="py-16 px-6"
         id="features"
-        initial="initial"
-        animate="animate"
-        variants={staggerContainer}
+        initial="hidden"
+        whileInView="show"
+        viewport={{ once: true, amount: 0.3 }}
+        variants={{
+          hidden: { opacity: 0, y: 30 },
+          show: { opacity: 1, y: 0, transition: { staggerChildren: 0.2 } },
+        }}
       >
         <h2 className="text-4xl font-bold text-center mb-12 text-[#D9D1BE]">
           Why Choose Us
         </h2>
-        <div className="grid md:grid-cols-3 gap-10">
+        <div className="grid md:grid-cols-3 gap-10 max-w-5xl mx-auto">
           {[
             {
               title: "Nearby Search",
@@ -153,11 +182,18 @@ const LandingPage = () => {
           ].map((feature, index) => (
             <motion.div
               key={index}
-              className="bg-white text-[#290102] p-8 rounded-lg shadow-xl hover:shadow-2xl transform transition duration-300 hover:scale-105"
-              variants={fadeIn}
+              className="rounded-lg shadow-xl hover:shadow-2xl transform transition duration-300 hover:scale-105 
+                         bg-[#1F1F1F]/80 border border-[#D9D1BE]/30 p-8"
+              variants={{
+                hidden: { opacity: 0, y: 30 },
+                show: { opacity: 1, y: 0 },
+              }}
+              transition={{ duration: 0.5 }}
             >
-              <h3 className="text-2xl font-semibold mb-4">{feature.title}</h3>
-              <p className="text-sm">{feature.text}</p>
+              <h3 className="text-2xl font-semibold mb-4 text-[#D9D1BE] flex items-center gap-2">
+                <span>🌟</span> {feature.title}
+              </h3>
+              <p className="text-sm text-[#D9D1BE]">{feature.text}</p>
             </motion.div>
           ))}
         </div>
