@@ -36,7 +36,7 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-[#290102] via-[#1F1F1F] to-[#CDC69A] text-white font-sans">
+    <div className="min-h-screen bg-gradient-to-tr from-[#290102] via-[#442C2E] to-[#F2E8D0] text-[#290102] font-sans">
       {/* Header */}
       <motion.header
         className="sticky top-0 mx-auto bg-opacity-90 backdrop-blur-md bg-[#290102]/80 z-50 px-6 py-3 flex justify-between items-center shadow-md"
