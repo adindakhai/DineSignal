@@ -1,101 +1,166 @@
 "use client";
-import React, { useState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button"; // Import Button dari ShadCN
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"; // Import Card dari ShadCN
-import { Input } from "@/components/ui/input"; // Import Input dari ShadCN
 
-const LoginPage = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+
+const AuthPage = () => {
   const router = useRouter();
+  const [loginData, setLoginData] = useState({ email: "", password: "" });
+  const [signupData, setSignupData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
 
-    if (res?.ok) {
+    // Simulasi login
+    if (loginData.email && loginData.password) {
       const userData = {
-        email,
-        name: email.split("@")[0], // Gunakan nama berdasarkan email
+        email: loginData.email,
       };
+
+      // Simpan data ke localStorage
       localStorage.setItem("user", JSON.stringify(userData));
+
+      // Redirect ke halaman Home
       router.push("/home");
     } else {
-      alert("Login failed! Please check your email and password.");
+      alert("Please fill in all fields!");
+    }
+  };
+
+  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    // Simulasi signup
+    if (signupData.email && signupData.password && signupData.name) {
+      const userData = {
+        name: signupData.name,
+        email: signupData.email,
+      };
+
+      // Simpan data ke localStorage
+      localStorage.setItem("user", JSON.stringify(userData));
+
+      // Redirect ke halaman Home
+      router.push("/home");
+    } else {
+      alert("Please fill in all fields!");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-[#290102] via-[#442C2E] to-[#F2E8D0] bg-fixed bg-no-repeat flex items-center justify-center text-white relative">
-      {/* Back Button */}
-      <Button
-        onClick={() => router.push("/")}
-        variant="ghost"
-        className="absolute top-4 left-4 text-[#D9D1BE] bg-[#290102] px-4 py-2 rounded-md hover:bg-[#442C2E] transition"
-      >
-        ← Back
-      </Button>
+    <div className="min-h-screen bg-gradient-to-br from-[#290102] via-[#293454] to-[#CDC69A] flex items-center justify-center text-white">
+      <div className="bg-[#D9D1BE] text-[#290102] p-8 rounded-lg shadow-lg w-full max-w-lg">
+        <Tabs defaultValue="login">
+          <TabsList className="mb-6">
+            <TabsTrigger value="login">Login</TabsTrigger>
+            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+          </TabsList>
 
-      {/* Login Card */}
-      <Card className="w-full max-w-md bg-[#D9D1BE] text-[#290102] rounded-lg shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-center text-2xl font-bold mb-4">
-            Log In to Dine Signal
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin}>
-            <div className="mb-4">
-              <label htmlFor="email" className="block text-sm font-medium mb-1">
-                Email
-              </label>
-              <Input
-                type="email"
-                id="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                className="w-full"
-              />
-            </div>
-            <div className="mb-4">
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium mb-1"
+          {/* Login Form */}
+          <TabsContent value="login">
+            <h2 className="text-2xl font-bold text-center mb-6">Log In</h2>
+            <form onSubmit={handleLogin}>
+              <div className="mb-4">
+                <label htmlFor="login-email" className="block text-sm font-medium mb-1">Email</label>
+                <input
+                  type="email"
+                  id="login-email"
+                  value={loginData.email}
+                  onChange={(e) =>
+                    setLoginData({ ...loginData, email: e.target.value })
+                  }
+                  placeholder="Enter your email"
+                  className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#293454]"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="login-password" className="block text-sm font-medium mb-1">Password</label>
+                <input
+                  type="password"
+                  id="login-password"
+                  value={loginData.password}
+                  onChange={(e) =>
+                    setLoginData({ ...loginData, password: e.target.value })
+                  }
+                  placeholder="Enter your password"
+                  className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#293454]"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-[#290102] text-[#D9D1BE] py-2 rounded-md font-semibold hover:bg-[#293454]"
               >
-                Password
-              </label>
-              <Input
-                type="password"
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                className="w-full"
-              />
-            </div>
-            <Button
-              type="submit"
-              className="w-full bg-[#290102] text-[#D9D1BE] py-2 rounded-md font-semibold hover:bg-[#293454] transition"
-            >
-              Log In
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+                Log In
+              </button>
+            </form>
+          </TabsContent>
+
+          {/* Signup Form */}
+          <TabsContent value="signup">
+            <h2 className="text-2xl font-bold text-center mb-6">Sign Up</h2>
+            <form onSubmit={handleSignup}>
+              <div className="mb-4">
+                <label htmlFor="signup-name" className="block text-sm font-medium mb-1">Name</label>
+                <input
+                  type="text"
+                  id="signup-name"
+                  value={signupData.name}
+                  onChange={(e) =>
+                    setSignupData({ ...signupData, name: e.target.value })
+                  }
+                  placeholder="Enter your name"
+                  className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#293454]"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="signup-email" className="block text-sm font-medium mb-1">Email</label>
+                <input
+                  type="email"
+                  id="signup-email"
+                  value={signupData.email}
+                  onChange={(e) =>
+                    setSignupData({ ...signupData, email: e.target.value })
+                  }
+                  placeholder="Enter your email"
+                  className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#293454]"
+                />
+              </div>
+              <div className="mb-4">
+                <label htmlFor="signup-password" className="block text-sm font-medium mb-1">Password</label>
+                <input
+                  type="password"
+                  id="signup-password"
+                  value={signupData.password}
+                  onChange={(e) =>
+                    setSignupData({ ...signupData, password: e.target.value })
+                  }
+                  placeholder="Create a password"
+                  className="w-full px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#293454]"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-[#290102] text-[#D9D1BE] py-2 rounded-md font-semibold hover:bg-[#293454]"
+              >
+                Sign Up
+              </button>
+            </form>
+          </TabsContent>
+        </Tabs>
+        <button
+          onClick={() => router.push("/")}
+          className="mt-6 w-full bg-[#293454] text-[#D9D1BE] py-2 rounded-md font-semibold hover:bg-[#290102]"
+        >
+          Back to Home
+        </button>
+      </div>
     </div>
   );
 };
 
-export default LoginPage;
+export default AuthPage;

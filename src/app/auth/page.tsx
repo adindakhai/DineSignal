@@ -3,20 +3,14 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const SignupPage = () => {
-  const [signupData, setSignupData] = useState({
-    name: "",
-    email: "",
-    password: "",
-  });
+const AuthPage = () => {
   const router = useRouter();
+  const [loginData, setLoginData] = useState({ email: "", password: "" });
 
-  const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
-    if (signupData.name && signupData.email && signupData.password) {
-      const userData = { name: signupData.name, email: signupData.email };
-      localStorage.setItem("user", JSON.stringify(userData));
+    if (loginData.email && loginData.password) {
+      localStorage.setItem("user", JSON.stringify({ email: loginData.email }));
       router.push("/home");
     } else {
       alert("Please fill in all fields!");
@@ -57,39 +51,24 @@ const SignupPage = () => {
           </button>
         </header>
 
-        <h1 className="text-4xl font-bold text-[#290102] mb-4">
-          Create Your Account
-        </h1>
+        <h1 className="text-4xl font-bold text-[#290102] mb-4">Welcome Back!</h1>
         <p className="text-sm text-[#442C2E] mb-6">
-          Already have an account?{" "}
+          Don’t have an account?{" "}
           <span
-            onClick={() => router.push("/auth")}
+            onClick={() => router.push("/signup")}
             className="text-[#293454] font-semibold cursor-pointer"
           >
-            Log In
+            Sign Up
           </span>
         </p>
 
-        <form onSubmit={handleSignup} className="space-y-4">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Name"
-              value={signupData.name}
-              onChange={(e) =>
-                setSignupData({ ...signupData, name: e.target.value })
-              }
-              className="w-full p-3 border border-[#CDC69A] rounded-full focus:ring-2 focus:ring-[#290102] placeholder-[#442C2E] text-[#290102]"
-            />
-          </div>
+        <form onSubmit={handleLogin} className="space-y-4">
           <div className="relative">
             <input
               type="email"
               placeholder="Email"
-              value={signupData.email}
-              onChange={(e) =>
-                setSignupData({ ...signupData, email: e.target.value })
-              }
+              value={loginData.email}
+              onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
               className="w-full p-3 border border-[#CDC69A] rounded-full focus:ring-2 focus:ring-[#290102] placeholder-[#442C2E] text-[#290102]"
             />
           </div>
@@ -97,27 +76,42 @@ const SignupPage = () => {
             <input
               type="password"
               placeholder="Password"
-              value={signupData.password}
-              onChange={(e) =>
-                setSignupData({ ...signupData, password: e.target.value })
-              }
+              value={loginData.password}
+              onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
               className="w-full p-3 border border-[#CDC69A] rounded-full focus:ring-2 focus:ring-[#290102] placeholder-[#442C2E] text-[#290102]"
             />
             <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#442C2E]">
               👁
             </span>
           </div>
+          <button className="text-sm text-[#293454]">Forgot your password?</button>
 
           <button
             type="submit"
             className="w-full py-3 bg-[#290102] text-[#D9D1BE] rounded-full font-semibold hover:bg-[#293454] transition"
           >
-            Sign Up
+            Sign In
           </button>
         </form>
+
+        <div className="my-6 flex items-center justify-center space-x-2">
+          <span className="text-sm text-[#442C2E]">OR</span>
+        </div>
+
+        <div className="flex space-x-4">
+          <button className="flex-1 py-3 bg-[#CDC69A] text-[#290102] rounded-full font-semibold hover:bg-[#D9D1BE] transition">
+            Google
+          </button>
+          <button className="flex-1 py-3 bg-[#CDC69A] text-[#290102] rounded-full font-semibold hover:bg-[#D9D1BE] transition">
+            Facebook
+          </button>
+          <button className="flex-1 py-3 bg-[#CDC69A] text-[#290102] rounded-full font-semibold hover:bg-[#D9D1BE] transition">
+            Apple
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
-export default SignupPage;
+export default AuthPage;

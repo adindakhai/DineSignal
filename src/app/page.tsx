@@ -54,10 +54,10 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-[#290102] via-[#442C2E] to-[#F2E8D0] bg-fixed bg-no-repeat text-[#290102] font-sans">
+    <div className="min-h-screen bg-gradient-to-tr from-[#290102] via-[#442C2E] to-[#F2E8D0] bg-fixed bg-no-repeat text-[#D9D1BE] font-sans">
       {/* Header */}
       <motion.header
-        className="sticky top-0 mx-auto bg-opacity-90 backdrop-blur-md bg-[#290102]/80 z-50 px-6 py-3 flex justify-between items-center shadow-md"
+        className="sticky top-0 mx-auto bg-opacity-90 backdrop-blur-md bg-[#290102]/80 z-50 px-6 py-6 flex justify-between items-center shadow-md"
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
@@ -66,19 +66,19 @@ const LandingPage = () => {
           Dine<span className="text-[#CDC69A]">Signal</span>
         </div>
         <nav className="space-x-6 text-sm uppercase">
-          <Button
-            onClick={() => router.push("/login")}
-            variant="ghost"
-            className="text-[#D9D1BE] hover:text-[#CDC69A] transition"
-          >
-            Log In
-          </Button>
-          <Button
-            onClick={() => router.push("/signup")}
-            className="px-4 py-2 bg-[#CDC69A] text-[#290102] rounded-full font-semibold hover:bg-[#D9D1BE] transition"
-          >
-            Sign Up
-          </Button>
+        <Button
+  onClick={() => router.push("/auth")}
+  variant="ghost"
+  className="text-[#D9D1BE] hover:text-[#CDC69A] transition"
+>
+  Log In
+</Button>
+<Button
+  onClick={() => router.push("/auth")}
+  className="px-4 py-2 bg-[#CDC69A] text-[#290102] rounded-full font-semibold hover:bg-[#D9D1BE] transition"
+>
+  Sign Up
+</Button>
         </nav>
       </motion.header>
 
@@ -94,7 +94,7 @@ const LandingPage = () => {
           className="text-6xl font-extrabold leading-tight"
           {...fadeIn}
         >
-          Find Your <span className="text-[#D9D1BE]">Perfect Place</span>
+          Find Your <span className="text-[#290102]">Perfect Place</span>
         </motion.h1>
         <motion.p
           className="mt-4 text-lg max-w-2xl mx-auto text-[#D9D1BE]"
@@ -105,7 +105,7 @@ const LandingPage = () => {
         </motion.p>
         <motion.div {...hoverEffect}>
           <Button
-            onClick={() => router.push("/signup")}
+            onClick={() => router.push("/auth")}
             className="mt-8 bg-[#CDC69A] text-[#290102] px-8 py-4 rounded-full font-bold text-lg shadow-lg hover:shadow-xl hover:bg-[#D9D1BE] transition"
           >
             Get Started
