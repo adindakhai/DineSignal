@@ -18,7 +18,7 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-[#290102] via-[#293454] to-[#CDC69A] flex">
+    <div className="min-h-screen bg-gradient-to-tr from-[#290102] via-[#442C2E] to-[#F2E8D0] flex">
       {/* Left Image Section */}
       <div className="w-1/2 relative">
         <img
@@ -26,11 +26,11 @@ const AuthPage = () => {
           alt="Restaurant"
           className="absolute inset-0 object-cover w-full h-full"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
       </div>
 
       {/* Right Form Section */}
-      <div className="flex flex-col justify-center w-1/2 bg-white p-12">
+      <div className="flex flex-col justify-center w-1/2 bg-[#F2E8D0] p-12 shadow-lg">
         <header className="flex justify-between items-center mb-10">
           <nav className="flex space-x-6">
             <a href="#" className="text-[#290102] hover:text-[#CDC69A]">
@@ -69,7 +69,7 @@ const AuthPage = () => {
               placeholder="Email"
               value={loginData.email}
               onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-              className="w-full p-3 border border-[#CDC69A] rounded-full focus:ring-2 focus:ring-[#290102] placeholder-[#442C2E] text-[#290102]"
+              className="w-full p-3 border border-[#CDC69A] rounded-full focus:ring-2 focus:ring-[#442C2E] placeholder-[#442C2E] text-[#290102]"
             />
           </div>
           <div className="relative">
@@ -78,39 +78,25 @@ const AuthPage = () => {
               placeholder="Password"
               value={loginData.password}
               onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-              className="w-full p-3 border border-[#CDC69A] rounded-full focus:ring-2 focus:ring-[#290102] placeholder-[#442C2E] text-[#290102]"
+              className="w-full p-3 border border-[#CDC69A] rounded-full focus:ring-2 focus:ring-[#442C2E] placeholder-[#442C2E] text-[#290102]"
             />
             <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#442C2E]">
               👁
             </span>
           </div>
-          <button className="text-sm text-[#293454]">Forgot your password?</button>
+          <button className="text-sm text-[#293454] hover:text-[#290102]">
+            Forgot your password?
+          </button>
 
           <button
             type="submit"
-            className="w-full py-3 bg-[#290102] text-[#D9D1BE] rounded-full font-semibold hover:bg-[#293454] transition"
+            className="w-full py-3 bg-[#290102] text-[#F2E8D0] rounded-full font-semibold hover:bg-[#442C2E] transition"
           >
-            Sign In
+            Log In
           </button>
         </form>
-
-        <div className="my-6 flex items-center justify-center space-x-2">
-          <span className="text-sm text-[#442C2E]">OR</span>
-        </div>
-
-        <div className="flex space-x-4">
-          <button className="flex-1 py-3 bg-[#CDC69A] text-[#290102] rounded-full font-semibold hover:bg-[#D9D1BE] transition">
-            Google
-          </button>
-          <button className="flex-1 py-3 bg-[#CDC69A] text-[#290102] rounded-full font-semibold hover:bg-[#D9D1BE] transition">
-            Facebook
-          </button>
-          <button className="flex-1 py-3 bg-[#CDC69A] text-[#290102] rounded-full font-semibold hover:bg-[#D9D1BE] transition">
-            Apple
-          </button>
         </div>
       </div>
-    </div>
   );
 };
 

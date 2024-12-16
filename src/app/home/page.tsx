@@ -27,8 +27,8 @@ const HomePage = () => {
 
   return (
     // Buat gradasi lebih halus: dari burgundy gelap ke coklat keabu-abuan, lalu ke krem.
-    <div className="min-h-screen bg-gradient-to-tr from-[#290102] via-[#442C2E] to-[#F2E8D0] text-[#290102] font-sans">
-      {/* Navbar */}
+<div className="min-h-screen bg-gradient-to-tr from-[#260401] to-[#E5D7C4] bg-fixed bg-no-repeat text-[#F2E8D0] font-sans">      {/* Header */}
+{/* Navbar */}
       <header className="sticky top-0 mx-auto bg-opacity-90 backdrop-blur-md bg-[#290102]/80 z-50 px-6 py-3 flex justify-between items-center shadow-md">
         <div className="text-2xl font-bold tracking-widest text-[#D9D1BE]">
           Dine<span className="text-[#CDC69A]">Signal</span>

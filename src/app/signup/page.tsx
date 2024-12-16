@@ -36,7 +36,7 @@ const SignupPage = () => {
       </div>
 
       {/* Right Form Section */}
-      <div className="flex flex-col justify-center w-1/2 bg-white p-12">
+      <div className="flex flex-col justify-center w-1/2 bg-[#F2E8D0] p-12">
         <header className="flex justify-between items-center mb-10">
           <nav className="flex space-x-6">
             <a href="#" className="text-[#290102] hover:text-[#CDC69A]">
@@ -110,7 +110,7 @@ const SignupPage = () => {
 
           <button
             type="submit"
-            className="w-full py-3 bg-[#290102] text-[#D9D1BE] rounded-full font-semibold hover:bg-[#293454] transition"
+            className="w-full py-3 bg-[#290102] text-[#D9D1BE] rounded-full font-semibold hover:bg-[#442C2E] transition"
           >
             Sign Up
           </button>
