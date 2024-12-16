@@ -54,8 +54,7 @@ const LandingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-[#290102] via-[#442C2E] to-[#F2E8D0] bg-fixed bg-no-repeat text-[#D9D1BE] font-sans">
-      {/* Header */}
+<div className="min-h-screen bg-gradient-to-tr from-[#260401] to-[#E5D7C4] bg-fixed bg-no-repeat text-[#F2E8D0] font-sans">      {/* Header */}
       <motion.header
         className="sticky top-0 mx-auto bg-opacity-90 backdrop-blur-md bg-[#290102]/80 z-50 px-6 py-6 flex justify-between items-center shadow-md"
         initial={{ y: -50, opacity: 0 }}
@@ -121,34 +120,30 @@ const LandingPage = () => {
         <div className="grid md:grid-cols-3 gap-10 max-w-7xl mx-auto">
           {cafes.map((cafe, index) => (
             <motion.div
-              key={index}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="rounded-lg overflow-hidden shadow-lg bg-[#1F1F1F]/80 border border-[#D9D1BE]/30"
-            >
-              <Card>
-                <CardHeader className="p-0">
-                  <img
-                    src={cafe.image}
-                    alt={cafe.name}
-                    className="w-full h-[200px] object-cover"
-                  />
-                </CardHeader>
-                <CardContent className="p-6 text-[#D9D1BE]">
-                  <CardTitle className="text-xl font-semibold mb-2">
-                    {cafe.name}
-                  </CardTitle>
-                  <CardDescription className="text-sm">
-                    {cafe.description}
-                  </CardDescription>
-                </CardContent>
-                <CardFooter className="p-6">
-                  <Button className="bg-[#CDC69A] text-[#290102] px-4 py-2 rounded-full font-bold hover:bg-[#D9D1BE] transition">
-                    Explore
-                  </Button>
-                </CardFooter>
-              </Card>
-            </motion.div>
+            key={index}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="rounded-lg overflow-hidden shadow-lg"
+          >
+            <Card className="bg-[#F2E8D0]">
+              <CardHeader className="p-0">
+                <img
+                  src={cafe.image}
+                  alt={cafe.name}
+                  className="w-full h-[200px] object-cover"
+                />
+              </CardHeader>
+              <CardContent className="p-6 text-[#290102]">
+                <CardTitle className="text-xl font-semibold mb-2">{cafe.name}</CardTitle>
+                <CardDescription className="text-sm">{cafe.description}</CardDescription>
+              </CardContent>
+              <CardFooter className="p-6">
+                <Button className="bg-[#CDC69A] text-[#290102] px-4 py-2 rounded-full font-bold hover:bg-[#D9D1BE] transition">
+                  Explore
+                </Button>
+              </CardFooter>
+            </Card>
+          </motion.div>          
           ))}
         </div>
       </section>
