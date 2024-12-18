@@ -41,11 +41,39 @@ export const authOptions: AuthOptions = {
         }
 
         console.log("User logged in successfully:", user);
-        return user;
+        return user; // This will include the user object in the JWT payload
       },
     }),
   ],
-  debug: true, // Aktifkan debug mode
+  session: {
+    strategy: "jwt", // Use JWT for session handling
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      // Add custom claims to the token
+      if (user) {
+        token.id = user.id; // Add the user ID to the token
+        token.name = user.name; // Include the user's name
+        token.email = user.email; // Include the user's email
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      // Attach the token's information to the session object
+      if (token) {
+        session.user = {
+          name: token.name,
+          email: token.email,
+        };
+      }
+      return session;
+    },
+  },
+  jwt: {
+    secret: process.env.JWT_SECRET, // Use a secure secret key from your .env file
+    maxAge: 60 * 60 * 24 * 7, // Token valid for 7 days
+  },
+  debug: true, // Enable debug mode
 };
 
 const handler = NextAuth(authOptions);

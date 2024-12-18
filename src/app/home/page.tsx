@@ -8,8 +8,6 @@ const HomePage = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
 
-
-
   // Jika session sedang dimuat
   if (status === "loading") {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
@@ -47,9 +45,13 @@ const HomePage = () => {
         <h1 className="text-4xl md:text-5xl font-extrabold">
           Welcome, <span className="text-[#D9D1BE]">{session?.user?.name || "Guest"}!</span>
         </h1>
-        <p className="mt-4 text-lg max-w-2xl mx-auto text-[#D9D1BE]">
-          You are logged in as {session?.user?.email || "unknown email"}.
-        </p>
+        {session?.user?.name ? (
+          <p className="mt-4 text-lg max-w-2xl mx-auto text-[#D9D1BE]">
+            You are logged in as {session?.user?.email || "unknown email"}.
+          </p>
+        ) : (
+          <p className="mt-4 text-lg text-red-500">Loading user data...</p>
+        )}
       </section>
 
       {/* Explore Section */}
@@ -58,7 +60,11 @@ const HomePage = () => {
           Explore Restaurants Near You
         </h2>
         <div className="grid md:grid-cols-3 gap-10 max-w-5xl mx-auto">
-          {["Italian Bistro", "Sushi Haven", "Burger Palace"].map((restaurant, index) => (
+          {[
+            "Italian Bistro",
+            "Sushi Haven",
+            "Burger Palace",
+          ].map((restaurant, index) => (
             <div
               key={index}
               className="rounded-lg shadow-xl hover:shadow-2xl transform transition duration-300 hover:scale-105 
