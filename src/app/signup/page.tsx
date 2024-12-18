@@ -2,30 +2,66 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 const SignupPage = () => {
   const [signupData, setSignupData] = useState({
     name: "",
+
     email: "",
     password: "",
   });
   const router = useRouter();
+  const [error, setError] = useState("");
 
+  // Fungsi handleSignup
   const handleSignup = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (signupData.name && signupData.email && signupData.password) {
-      const userData = { name: signupData.name, email: signupData.email };
-      localStorage.setItem("user", JSON.stringify(userData));
-      router.push("/home");
-    } else {
+    if (!signupData.name || !signupData.email || !signupData.password) {
       alert("Please fill in all fields!");
+      return;
+    }
+
+    try {
+      // Kirim data registrasi ke API
+      const res = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(signupData),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        console.log("User registered successfully:", data);
+
+        // Proses login otomatis setelah registrasi
+        const loginResult = await signIn("credentials", {
+          redirect: false,
+          email: signupData.email,
+          password: signupData.password,
+        });
+
+        if (!loginResult?.error) {
+          console.log("User logged in successfully");
+          window.location.href = '/home';
+        } else {
+          console.error("Login failed:", loginResult.error);
+          setError("Failed to log in. Please try manually.");
+          router.push("/auth");
+        }
+      } else {
+        const errorData = await res.json();
+        setError(errorData.error || "Failed to create account.");
+      }
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      setError("An unexpected error occurred. Please try again later.");
     }
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-[#290102] via-[#293454] to-[#CDC69A] flex">
-      {/* Left Image Section */}
       <div className="w-1/2 relative">
         <img
           src="/images/resto1.jpg"
@@ -35,28 +71,8 @@ const SignupPage = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
       </div>
 
-      {/* Right Form Section */}
+      {/* Form Section */}
       <div className="flex flex-col justify-center w-1/2 bg-[#F2E8D0] p-12">
-        <header className="flex justify-between items-center mb-10">
-          <nav className="flex space-x-6">
-            <a href="#" className="text-[#290102] hover:text-[#CDC69A]">
-              Home
-            </a>
-            <a href="#" className="text-[#290102] hover:text-[#CDC69A]">
-              Catalogue
-            </a>
-            <a href="#" className="text-[#290102] hover:text-[#CDC69A]">
-              About Us
-            </a>
-          </nav>
-          <button
-            onClick={() => router.push("/profile")}
-            className="text-[#290102] hover:text-[#CDC69A]"
-          >
-            Profile
-          </button>
-        </header>
-
         <h1 className="text-4xl font-bold text-[#290102] mb-4">
           Create Your Account
         </h1>
@@ -70,47 +86,43 @@ const SignupPage = () => {
           </span>
         </p>
 
-        <form onSubmit={handleSignup} className="space-y-4">
-          <div className="relative">
-            <input
-              type="text"
-              placeholder="Name"
-              value={signupData.name}
-              onChange={(e) =>
-                setSignupData({ ...signupData, name: e.target.value })
-              }
-              className="w-full p-3 border border-[#CDC69A] rounded-full focus:ring-2 focus:ring-[#290102] placeholder-[#442C2E] text-[#290102]"
-            />
+        {error && (
+          <div className="mb-4 text-red-600 font-medium">
+            {error}
           </div>
-          <div className="relative">
-            <input
-              type="email"
-              placeholder="Email"
-              value={signupData.email}
-              onChange={(e) =>
-                setSignupData({ ...signupData, email: e.target.value })
-              }
-              className="w-full p-3 border border-[#CDC69A] rounded-full focus:ring-2 focus:ring-[#290102] placeholder-[#442C2E] text-[#290102]"
-            />
-          </div>
-          <div className="relative">
-            <input
-              type="password"
-              placeholder="Password"
-              value={signupData.password}
-              onChange={(e) =>
-                setSignupData({ ...signupData, password: e.target.value })
-              }
-              className="w-full p-3 border border-[#CDC69A] rounded-full focus:ring-2 focus:ring-[#290102] placeholder-[#442C2E] text-[#290102]"
-            />
-            <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#442C2E]">
-              👁
-            </span>
-          </div>
+        )}
 
+        <form onSubmit={handleSignup} className="space-y-4">
+          <input
+            type="text"
+            placeholder="Name"
+            value={signupData.name}
+            onChange={(e) =>
+              setSignupData({ ...signupData, name: e.target.value })
+            }
+            className="w-full p-3 border rounded-full placeholder-[#442C2E]"
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={signupData.email}
+            onChange={(e) =>
+              setSignupData({ ...signupData, email: e.target.value })
+            }
+            className="w-full p-3 border rounded-full placeholder-[#442C2E]"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={signupData.password}
+            onChange={(e) =>
+              setSignupData({ ...signupData, password: e.target.value })
+            }
+            className="w-full p-3 border rounded-full placeholder-[#442C2E]"
+          />
           <button
             type="submit"
-            className="w-full py-3 bg-[#290102] text-[#D9D1BE] rounded-full font-semibold hover:bg-[#442C2E] transition"
+            className="w-full py-3 bg-[#290102] text-white rounded-full hover:bg-[#442C2E] transition"
           >
             Sign Up
           </button>

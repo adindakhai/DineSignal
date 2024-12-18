@@ -2,20 +2,42 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 const AuthPage = () => {
   const router = useRouter();
   const [loginData, setLoginData] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
 
-  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (loginData.email && loginData.password) {
-      localStorage.setItem("user", JSON.stringify({ email: loginData.email }));
-      router.push("/home");
-    } else {
+  
+    if (!loginData.email || !loginData.password) {
       alert("Please fill in all fields!");
+      return;
+    }
+  
+    try {
+      const result = await signIn("credentials", {
+        redirect: false,
+        email: loginData.email,
+        password: loginData.password,
+      });
+  
+      if (result?.error) {
+        setError("Invalid email or password.");
+      } else {
+        // Tambahkan delay kecil sebelum redirect
+        setTimeout(() => {
+          router.push("/home");
+        }, 500);
+      }
+    } catch (err) {
+      console.error("Login Error:", err);
+      setError("Something went wrong. Please try again.");
     }
   };
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-tr from-[#290102] via-[#442C2E] to-[#F2E8D0] flex">
@@ -33,19 +55,19 @@ const AuthPage = () => {
       <div className="flex flex-col justify-center w-1/2 bg-[#F2E8D0] p-12 shadow-lg">
         <header className="flex justify-between items-center mb-10">
           <nav className="flex space-x-6">
-            <a href="#" className="text-[#290102] hover:text-[#CDC69A]">
+            <a href="/" className="text-[#290102] hover:text-[#CDC69A] transition">
               Home
             </a>
-            <a href="#" className="text-[#290102] hover:text-[#CDC69A]">
+            <a href="/catalogue" className="text-[#290102] hover:text-[#CDC69A] transition">
               Catalogue
             </a>
-            <a href="#" className="text-[#290102] hover:text-[#CDC69A]">
+            <a href="/about" className="text-[#290102] hover:text-[#CDC69A] transition">
               About Us
             </a>
           </nav>
           <button
             onClick={() => router.push("/profile")}
-            className="text-[#290102] hover:text-[#CDC69A]"
+            className="text-[#290102] hover:text-[#CDC69A] transition"
           >
             Profile
           </button>
@@ -61,6 +83,12 @@ const AuthPage = () => {
             Sign Up
           </span>
         </p>
+
+        {error && (
+          <div className="mb-4 text-red-600 font-medium">
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div className="relative">
@@ -84,7 +112,11 @@ const AuthPage = () => {
               👁
             </span>
           </div>
-          <button className="text-sm text-[#293454] hover:text-[#290102]">
+          <button
+            type="button"
+            onClick={() => alert("Feature belum tersedia!")}
+            className="text-sm text-[#293454] hover:text-[#290102] transition"
+          >
             Forgot your password?
           </button>
 
@@ -95,8 +127,8 @@ const AuthPage = () => {
             Log In
           </button>
         </form>
-        </div>
       </div>
+    </div>
   );
 };
 
