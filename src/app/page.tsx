@@ -87,7 +87,7 @@ const LandingPage = () => {
           transition={{ duration: 10, repeat: Infinity, repeatType: "reverse" }}
         >
           <Image
-            src="/images/hero-bg.jpg"
+            src="/images/resto1.jpg"
             alt="Food background"
             layout="fill"
             objectFit="cover"
