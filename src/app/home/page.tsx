@@ -158,10 +158,59 @@ const HomePage = () => {
           <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-center text-[#F8ECEC]">
             Filter Your Options
           </h2>
+
+          {/* Search Bar */}
+          <div className="w-full max-w-4xl mx-auto space-y-4 mb-8">
+            <div className="flex space-x-2">
+            <Input
+                type="text"
+                placeholder="Search for cuisines or restaurants"
+                className=" flex-grow w-64 md:w-80 pl-10 pr-4 py-2 rounded-full bg-white/10 backdrop-blur-md text-[#F8ECEC] placeholder-[#F8ECEC]/50 border-[#D9A5A5] focus:border-[#F8ECEC]"
+              />
+              <Button className="bg-[#CDC69A] text-[#290102]">
+                <Search className="h-4 w-4 mr-2" />
+                Search
+              </Button>
+            </div>
+            <div className="flex space-x-2">
+              <Select>
+                <SelectTrigger className="flex-grow bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5]">
+                  <SelectValue placeholder="Cuisine Type" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#4A1414] text-[#F8ECEC]">
+                  {cuisines.map((type) => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select>
+                <SelectTrigger className="flex-grow bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5]">
+                  <SelectValue placeholder="Average Cost" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#4A1414] text-[#F8ECEC]">
+                  <SelectItem value="low">$</SelectItem>
+                  <SelectItem value="medium">$$</SelectItem>
+                  <SelectItem value="high">$$$</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select>
+                <SelectTrigger className="flex-grow bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5]">
+                  <SelectValue placeholder="Distance" />
+                </SelectTrigger>
+                <SelectContent className="bg-[#4A1414] text-[#F8ECEC]">
+                  <SelectItem value="1">&lt; 1 km</SelectItem>
+                  <SelectItem value="5">&lt; 5 km</SelectItem>
+                  <SelectItem value="10">&lt; 10 km</SelectItem>
+                  <SelectItem value="20">&lt; 20 km</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             {/* Cuisine Type */}
             <div>
-              <label htmlFor="cuisine-type" className="block text-sm font-medium text-[#F8ECEC] mb-2">
+              {/* <label htmlFor="cuisine-type" className="block text-sm font-medium text-[#F8ECEC] mb-2">
                 Cuisine Type
               </label>
               <Select onValueChange={setCuisineType}>
@@ -175,10 +224,10 @@ const HomePage = () => {
                     </SelectItem>
                   ))}
                 </SelectContent>
-              </Select>
+              </Select> */}
             </div>
 
-            {/* Price Range */}
+            {/* Price Range
             <div>
               <label htmlFor="price-range" className="block text-sm font-medium text-[#F8ECEC] mb-2">
                 Price Range
@@ -195,11 +244,11 @@ const HomePage = () => {
               <div className="mt-2 text-sm text-[#F8ECEC]">
                 ${priceRange[0]} - ${priceRange[1]}
               </div>
-            </div>
+            </div> */}
 
             {/* Distance */}
             <div>
-              <label htmlFor="distance" className="block text-sm font-medium text-[#F8ECEC] mb-2">
+              {/* <label htmlFor="distance" className="block text-sm font-medium text-[#F8ECEC] mb-2">
                 Distance (km)
               </label>
               <Slider
@@ -213,7 +262,7 @@ const HomePage = () => {
               />
               <div className="mt-2 text-sm text-[#F8ECEC]">
                 {distance} km
-              </div>
+              </div> */}
             </div>
           </div>
           <div className="mt-6 md:mt-8 text-center">
