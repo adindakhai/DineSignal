@@ -15,7 +15,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, MapPin, Coffee, Utensils, ChefHat } from 'lucide-react';
+import { Search, Utensils } from "lucide-react";
+
+interface Restaurant {
+  id: number;
+  restaurant_id: number;
+  name: string;
+  city?: string;
+  address?: string;
+  locality?: string;
+  longitude?: number;
+  latitude?: number;
+  cuisines?: string;
+  average_cost?: number;
+  aggregate_rating?: number;
+  votes?: number;
+}
 
 const HomePage = () => {
   const { data: session, status } = useSession();
@@ -23,12 +38,60 @@ const HomePage = () => {
   const [cuisineType, setCuisineType] = useState("");
   const [priceRange, setPriceRange] = useState([0, 100]);
   const [distance, setDistance] = useState(5);
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [cuisines, setCuisines] = useState<string[]>([]);
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth");
     }
   }, [status, router]);
+
+  useEffect(() => {
+    const fetchCuisines = async () => {
+      try {
+        const response = await fetch("/api/restaurants/cuisines");
+        if (!response.ok) {
+          throw new Error(`API responded with status ${response.status}: ${response.statusText}`);
+        }
+        const data: string[] = await response.json();
+        const uniqueCuisines = Array.from(
+          new Set(
+            data
+              .flatMap((cuisine: string) => 
+                cuisine.split(",").map((item: string) => item.trim())
+              )
+              .filter((item: string) => item)
+          )
+        );
+        setCuisines(uniqueCuisines);
+      } catch (error) {
+        console.error("Error fetching cuisines:", error);
+      }
+    };
+
+    fetchCuisines();
+  }, []);
+
+  const handleLogout = () => {
+    signOut({ callbackUrl: "/" });
+  };
+
+  const handleFilter = async () => {
+    try {
+      const queryParams = new URLSearchParams({
+        cuisine: cuisineType,
+        priceRange: priceRange.join("-"),
+        city: "Your City Here",
+      }).toString();
+
+      const response = await fetch(`/api/restaurants?${queryParams}`);
+      const data = await response.json();
+      setRestaurants(data);
+    } catch (error) {
+      console.error("Error fetching restaurants:", error);
+    }
+  };
 
   if (status === "loading") {
     return (
@@ -37,15 +100,6 @@ const HomePage = () => {
       </div>
     );
   }
-
-  const handleLogout = () => {
-    signOut({ callbackUrl: "/" });
-  };
-
-  const handleFilter = () => {
-    // Implement filtering logic here
-    console.log("Filtering with:", { cuisineType, priceRange, distance });
-  };
 
   return (
     <div className="min-h-screen bg-[#2C0A0A] text-[#F8ECEC] font-sans">
@@ -62,10 +116,6 @@ const HomePage = () => {
               Dine<span className="text-[#CDC69A]">Signal</span>
             </span>
           </div>
-          {/* <nav className="hidden md:flex space-x-8 text-sm">
-            <a href="#explore" className="text-[#F8ECEC] hover:text-[#D9A5A5] transition duration-300">Explore</a>
-            <a href="#filter" className="text-[#F8ECEC] hover:text-[#D9A5A5] transition duration-300">Filter</a>
-          </nav> */}
           <Button
             onClick={handleLogout}
             variant="ghost"
@@ -100,28 +150,6 @@ const HomePage = () => {
         <h1 className="text-3xl md:text-5xl font-extrabold relative z-10">
           Welcome, <span className="text-[#D9D1BE]">{session?.user?.name || "Guest"}!</span>
         </h1>
-        <motion.div
-          className="mt-8 md:mt-10 relative z-10"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.6 }}
-        >
-          <div className="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-4">
-            <div className="relative w-full md:w-auto">
-              <Input
-                type="text"
-                placeholder="Search for cuisines or restaurants"
-                className="w-full md:w-64 lg:w-80 pl-10 pr-4 py-2 rounded-full bg-white/10 backdrop-blur-md text-[#F8ECEC] placeholder-[#F8ECEC]/50 border-[#D9A5A5] focus:border-[#F8ECEC]"
-              />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#D9A5A5]" size={18} />
-            </div>
-            <Button
-              className="bg-[#F2E8D0] text-[#4A1414] px-6 py-2 rounded-full font-bold text-lg shadow-lg hover:shadow-xl hover:bg-[#F8ECEC] transition duration-300"
-            >
-              Search
-            </Button>
-          </div>
-        </motion.div>
       </motion.section>
 
       {/* Filtering Section */}
@@ -141,10 +169,11 @@ const HomePage = () => {
                   <SelectValue placeholder="Select cuisine" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#2C0A0A] border-[#D9A5A5] text-[#F8ECEC]">
-                  <SelectItem value="italian">Italian</SelectItem>
-                  <SelectItem value="japanese">Japanese</SelectItem>
-                  <SelectItem value="mexican">Mexican</SelectItem>
-                  <SelectItem value="indian">Indian</SelectItem>
+                  {cuisines.map((cuisine, index) => (
+                    <SelectItem key={index} value={cuisine}>
+                      {cuisine}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
@@ -204,7 +233,7 @@ const HomePage = () => {
           Explore Restaurants Near You
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10 max-w-5xl mx-auto">
-          {["Italian Bistro", "Sushi Haven", "Burger Palace"].map((restaurant, index) => (
+          {restaurants.map((restaurant, index) => (
             <motion.div
               key={index}
               className="rounded-lg shadow-xl hover:shadow-2xl transform transition duration-300 hover:scale-105 bg-[#4A1414] border border-[#D9A5A5]/30 p-6 md:p-8"
@@ -214,14 +243,14 @@ const HomePage = () => {
             >
               <h3 className="text-xl md:text-2xl font-semibold mb-4 text-[#D9D1BE] flex items-center gap-2">
                 <Utensils className="h-6 w-6" />
-                {restaurant}
+                {restaurant.name}
               </h3>
               <p className="text-sm text-[#F8ECEC]/80">
-                Find the best dishes and vibes near you.
+                {restaurant.city || "No city information available"}
               </p>
               <Button
                 className="mt-4 md:mt-6 w-full bg-[#CDC69A] text-[#290102] rounded-full font-semibold hover:bg-[#D9D1BE] transition"
-                onClick={() => alert(`Explore ${restaurant}`)}
+                onClick={() => alert(`Explore ${restaurant.name}`)}
               >
                 Explore
               </Button>
