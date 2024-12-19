@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Slider } from "@/components/ui/slider";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -40,6 +40,8 @@ const HomePage = () => {
   const [distance, setDistance] = useState(5);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [cuisines, setCuisines] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -77,21 +79,50 @@ const HomePage = () => {
     signOut({ callbackUrl: "/" });
   };
 
+  const handlePageChange = async (newPage: number) => {
+    try {
+      const queryParams = new URLSearchParams({
+        cuisine: cuisineType,
+        priceRange: priceRange.join("-"),
+        page: newPage.toString(),
+      }).toString();
+  
+      const response = await fetch(`/api/restaurants?${queryParams}`);
+      if (!response.ok) {
+        throw new Error(`API responded with status ${response.status}: ${response.statusText}`);
+      }
+  
+      const { restaurants: fetchedRestaurants, totalPages: fetchedTotalPages } = await response.json();
+      setRestaurants(fetchedRestaurants);
+      setTotalPages(fetchedTotalPages);
+      setCurrentPage(newPage);
+    } catch (error) {
+      console.error("Error fetching restaurants:", error);
+    }
+  };  
+  
+
   const handleFilter = async () => {
     try {
       const queryParams = new URLSearchParams({
         cuisine: cuisineType,
         priceRange: priceRange.join("-"),
-        city: "Your City Here",
+        page: "1", // Reset ke halaman pertama
       }).toString();
-
+  
       const response = await fetch(`/api/restaurants?${queryParams}`);
-      const data = await response.json();
-      setRestaurants(data);
+      if (!response.ok) {
+        throw new Error(`API responded with status ${response.status}: ${response.statusText}`);
+      }
+  
+      const { restaurants: fetchedRestaurants, totalPages: fetchedTotalPages } = await response.json();
+      setRestaurants(fetchedRestaurants);
+      setTotalPages(fetchedTotalPages);
+      setCurrentPage(1); // Reset ke halaman pertama
     } catch (error) {
       console.error("Error fetching restaurants:", error);
     }
-  };
+  };   
 
   if (status === "loading") {
     return (
@@ -210,59 +241,14 @@ const HomePage = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             {/* Cuisine Type */}
             <div>
-              {/* <label htmlFor="cuisine-type" className="block text-sm font-medium text-[#F8ECEC] mb-2">
-                Cuisine Type
-              </label>
-              <Select onValueChange={setCuisineType}>
-                <SelectTrigger id="cuisine-type" className="w-full bg-[#2C0A0A] border-[#D9A5A5] text-[#F8ECEC]">
-                  <SelectValue placeholder="Select cuisine" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#2C0A0A] border-[#D9A5A5] text-[#F8ECEC]">
-                  {cuisines.map((cuisine, index) => (
-                    <SelectItem key={index} value={cuisine}>
-                      {cuisine}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select> */}
+              {}
             </div>
 
-            {/* Price Range
-            <div>
-              <label htmlFor="price-range" className="block text-sm font-medium text-[#F8ECEC] mb-2">
-                Price Range
-              </label>
-              <Slider
-                id="price-range"
-                min={0}
-                max={100}
-                step={1}
-                value={priceRange}
-                onValueChange={setPriceRange}
-                className="w-full"
-              />
-              <div className="mt-2 text-sm text-[#F8ECEC]">
-                ${priceRange[0]} - ${priceRange[1]}
-              </div>
-            </div> */}
+            {}
 
-            {/* Distance */}
+            {}
             <div>
-              {/* <label htmlFor="distance" className="block text-sm font-medium text-[#F8ECEC] mb-2">
-                Distance (km)
-              </label>
-              <Slider
-                id="distance"
-                min={1}
-                max={20}
-                step={1}
-                value={[distance]}
-                onValueChange={(value) => setDistance(value[0])}
-                className="w-full"
-              />
-              <div className="mt-2 text-sm text-[#F8ECEC]">
-                {distance} km
-              </div> */}
+              {}
             </div>
           </div>
           <div className="mt-6 md:mt-8 text-center">
@@ -278,35 +264,61 @@ const HomePage = () => {
 
       {/* Explore Section */}
       <section id="explore" className="relative py-12 md:py-16 px-4 md:px-6">
-        <h2 className="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8 text-[#D9D1BE]">
-          Explore Restaurants Near You
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10 max-w-5xl mx-auto">
-          {restaurants.map((restaurant, index) => (
-            <motion.div
-              key={index}
-              className="rounded-lg shadow-xl hover:shadow-2xl transform transition duration-300 hover:scale-105 bg-[#4A1414] border border-[#D9A5A5]/30 p-6 md:p-8"
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <h3 className="text-xl md:text-2xl font-semibold mb-4 text-[#D9D1BE] flex items-center gap-2">
-                <Utensils className="h-6 w-6" />
-                {restaurant.name}
-              </h3>
-              <p className="text-sm text-[#F8ECEC]/80">
-                {restaurant.city || "No city information available"}
+  <h2 className="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8 text-[#D9D1BE]">
+    Explore Restaurants Near You
+  </h2>
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10 max-w-5xl mx-auto">
+    {restaurants.length > 0 ? (
+      restaurants.map((restaurant, index) => (
+        <motion.div
+          key={index}
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: index * 0.1 }}
+        >
+          <Card className="bg-[#4A1414] border border-[#D9A5A5]/30">
+            <CardHeader>
+              <CardTitle className="text-[#D9D1BE]">{restaurant.name}</CardTitle>
+              <CardDescription className="text-[#F8ECEC]/80">
+                {restaurant.city || "City not available"}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-[#F8ECEC]/60">
+                Cuisines: {restaurant.cuisines || "N/A"}
               </p>
-              <Button
-                className="mt-4 md:mt-6 w-full bg-[#CDC69A] text-[#290102] rounded-full font-semibold hover:bg-[#D9D1BE] transition"
-                onClick={() => alert(`Explore ${restaurant.name}`)}
-              >
-                Explore
-              </Button>
-            </motion.div>
-          ))}
-        </div>
-      </section>
+              <p className="text-sm text-[#F8ECEC]/60">
+                Avg Cost: {restaurant.average_cost || "N/A"}
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+      ))
+    ) : (
+      <p className="text-center text-[#F8ECEC]/80">No restaurants found</p>
+    )}
+  </div>
+</section>
+
+<div className="flex justify-center items-center space-x-4 mt-8">
+  <Button
+    disabled={currentPage === 1}
+    onClick={() => handlePageChange(currentPage - 1)}
+    className="bg-[#CDC69A] text-[#290102]"
+  >
+    Previous
+  </Button>
+  <span className="text-[#F8ECEC]">
+    Page {currentPage} of {totalPages}
+  </span>
+  <Button
+    disabled={currentPage === totalPages}
+    onClick={() => handlePageChange(currentPage + 1)}
+    className="bg-[#CDC69A] text-[#290102]"
+  >
+    Next
+  </Button>
+</div>
 
       {/* Footer */}
       <footer className="py-8 md:py-12 bg-[#2C0A0A] text-[#F8ECEC]/80">
