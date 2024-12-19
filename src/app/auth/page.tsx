@@ -55,22 +55,22 @@ const AuthPage = () => {
       <div className="flex flex-col justify-center w-1/2 bg-[#F2E8D0] p-12 shadow-lg">
         <header className="flex justify-between items-center mb-10">
           <nav className="flex space-x-6">
-            <a href="/" className="text-[#290102] hover:text-[#CDC69A] transition">
+            {/* <a href="/" className="text-[#290102] hover:text-[#CDC69A] transition">
               Home
-            </a>
-            <a href="/catalogue" className="text-[#290102] hover:text-[#CDC69A] transition">
+            </a> */}
+            {/* <a href="/catalogue" className="text-[#290102] hover:text-[#CDC69A] transition">
               Catalogue
-            </a>
+            </a> */}
             <a href="/about" className="text-[#290102] hover:text-[#CDC69A] transition">
               About Us
             </a>
           </nav>
-          <button
+          {/* <button
             onClick={() => router.push("/profile")}
             className="text-[#290102] hover:text-[#CDC69A] transition"
           >
             Profile
-          </button>
+          </button> */}
         </header>
 
         <h1 className="text-4xl font-bold text-[#290102] mb-4">Welcome Back!</h1>

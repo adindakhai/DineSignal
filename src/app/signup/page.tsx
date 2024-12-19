@@ -80,7 +80,7 @@ const SignupPage = () => {
           Already have an account?{" "}
           <span
             onClick={() => router.push("/auth")}
-            className="text-[#293454] font-semibold cursor-pointer"
+            className="text-[#290102] font-bold cursor-pointer"
           >
             Log In
           </span>
@@ -100,7 +100,7 @@ const SignupPage = () => {
             onChange={(e) =>
               setSignupData({ ...signupData, name: e.target.value })
             }
-            className="w-full p-3 border rounded-full placeholder-[#442C2E]"
+            className="w-full p-3 border rounded-full placeholder-[#442C2E] text-[#290102]"
           />
           <input
             type="email"
@@ -109,7 +109,7 @@ const SignupPage = () => {
             onChange={(e) =>
               setSignupData({ ...signupData, email: e.target.value })
             }
-            className="w-full p-3 border rounded-full placeholder-[#442C2E]"
+            className="w-full p-3 border rounded-full placeholder-[#442C2E] text-[#290102]"
           />
           <input
             type="password"
@@ -118,11 +118,11 @@ const SignupPage = () => {
             onChange={(e) =>
               setSignupData({ ...signupData, password: e.target.value })
             }
-            className="w-full p-3 border rounded-full placeholder-[#442C2E]"
+            className="w-full p-3 border rounded-full placeholder-[#442C2E] text-[#290102]"
           />
           <button
             type="submit"
-            className="w-full py-3 bg-[#290102] text-white rounded-full hover:bg-[#442C2E] transition"
+            className="w-full py-3 bg-[#290102] text-[#ffebbc] rounded-full hover:bg-[#442C2E] transition"
           >
             Sign Up
           </button>
