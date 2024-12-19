@@ -1,8 +1,11 @@
-"use client";
+'use client';
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
+import Image from "next/image";
+import { motion } from "framer-motion";
+import { Mail, Lock } from 'lucide-react';
 
 const AuthPage = () => {
   const router = useRouter();
@@ -11,23 +14,22 @@ const AuthPage = () => {
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-  
+
     if (!loginData.email || !loginData.password) {
-      alert("Please fill in all fields!");
+      setError("Please fill in all fields!");
       return;
     }
-  
+
     try {
       const result = await signIn("credentials", {
         redirect: false,
         email: loginData.email,
         password: loginData.password,
       });
-  
+
       if (result?.error) {
         setError("Invalid email or password.");
       } else {
-        // Tambahkan delay kecil sebelum redirect
         setTimeout(() => {
           router.push("/home");
         }, 500);
@@ -37,96 +39,87 @@ const AuthPage = () => {
       setError("Something went wrong. Please try again.");
     }
   };
-  
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-[#290102] via-[#442C2E] to-[#F2E8D0] flex">
-      {/* Left Image Section */}
-      <div className="w-1/2 relative">
-        <img
-          src="/images/resto1.jpg"
-          alt="Restaurant"
-          className="absolute inset-0 object-cover w-full h-full"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-      </div>
-
-      {/* Right Form Section */}
-      <div className="flex flex-col justify-center w-1/2 bg-[#F2E8D0] p-12 shadow-lg">
-        <header className="flex justify-between items-center mb-10">
-          <nav className="flex space-x-6">
-            {/* <a href="/" className="text-[#290102] hover:text-[#CDC69A] transition">
-              Home
-            </a> */}
-            {/* <a href="/catalogue" className="text-[#290102] hover:text-[#CDC69A] transition">
-              Catalogue
-            </a> */}
-            <a href="/about" className="text-[#290102] hover:text-[#CDC69A] transition">
-              About Us
-            </a>
-          </nav>
-          {/* <button
-            onClick={() => router.push("/profile")}
-            className="text-[#290102] hover:text-[#CDC69A] transition"
-          >
-            Profile
-          </button> */}
-        </header>
-
-        <h1 className="text-4xl font-bold text-[#290102] mb-4">Welcome Back!</h1>
-        <p className="text-sm text-[#442C2E] mb-6">
-          Don’t have an account?{" "}
-          <span
-            onClick={() => router.push("/signup")}
-            className="text-[#293454] font-semibold cursor-pointer"
-          >
-            Sign Up
-          </span>
-        </p>
-
-        {error && (
-          <div className="mb-4 text-red-600 font-medium">
-            {error}
+    <div className="min-h-screen bg-[#290102] flex items-center justify-center p-4">
+      <div className="w-full max-w-4xl bg-[#F2E8D0] rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row">
+        {/* Image Section */}
+        <div className="w-full md:w-1/2 relative h-64 md:h-auto">
+          <Image
+            src="/images/resto1.jpg"
+            alt="Restaurant"
+            layout="fill"
+            objectFit="cover"
+            className="absolute inset-0"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#290102]/80 to-transparent flex flex-col justify-end p-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+            >
+              <h2 className="text-3xl font-bold text-[#F2E8D0] mb-2">Welcome Back!</h2>
+              <p className="text-[#CDC69A]">Log in to access your account</p>
+            </motion.div>
           </div>
-        )}
+        </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
-          <div className="relative">
-            <input
-              type="email"
-              placeholder="Email"
-              value={loginData.email}
-              onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-              className="w-full p-3 border border-[#CDC69A] rounded-full focus:ring-2 focus:ring-[#442C2E] placeholder-[#442C2E] text-[#290102]"
-            />
-          </div>
-          <div className="relative">
-            <input
-              type="password"
-              placeholder="Password"
-              value={loginData.password}
-              onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-              className="w-full p-3 border border-[#CDC69A] rounded-full focus:ring-2 focus:ring-[#442C2E] placeholder-[#442C2E] text-[#290102]"
-            />
-            <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#442C2E]">
-              👁
+        {/* Form Section */}
+        <div className="w-full md:w-1/2 p-8 md:p-12">
+          <h1 className="text-3xl font-bold text-[#290102] mb-6">Log In to Your Account</h1>
+
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg"
+            >
+              {error}
+            </motion.div>
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-6">
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#442C2E]" size={18} />
+              <input
+                type="email"
+                placeholder="Email Address"
+                value={loginData.email}
+                onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
+                className="w-full p-3 pl-10 border-2 border-[#CDC69A] rounded-lg bg-[#F2E8D0] placeholder-[#442C2E] text-[#290102] focus:outline-none focus:border-[#290102] transition duration-300"
+              />
+            </div>
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#442C2E]" size={18} />
+              <input
+                type="password"
+                placeholder="Password"
+                value={loginData.password}
+                onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
+                className="w-full p-3 pl-10 border-2 border-[#CDC69A] rounded-lg bg-[#F2E8D0] placeholder-[#442C2E] text-[#290102] focus:outline-none focus:border-[#290102] transition duration-300"
+              />
+            </div>
+
+            <motion.button
+              type="submit"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-full py-3 bg-gradient-to-r from-[#290102] to-[#442C2E] text-[#ffebbc] rounded-lg font-semibold hover:from-[#442C2E] hover:to-[#290102] transition duration-300 shadow-lg"
+            >
+              Log In
+            </motion.button>
+          </form>
+
+          <p className="mt-6 text-sm text-[#442C2E] text-center">
+            Don’t have an account?{" "}
+            <span
+              onClick={() => router.push("/signup")}
+              className="text-[#290102] font-bold cursor-pointer hover:underline"
+            >
+              Sign Up
             </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => alert("Feature belum tersedia!")}
-            className="text-sm text-[#293454] hover:text-[#290102] transition"
-          >
-            Forgot your password?
-          </button>
-
-          <button
-            type="submit"
-            className="w-full py-3 bg-[#290102] text-[#F2E8D0] rounded-full font-semibold hover:bg-[#442C2E] transition"
-          >
-            Log In
-          </button>
-        </form>
+          </p>
+        </div>
       </div>
     </div>
   );

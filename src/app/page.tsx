@@ -65,7 +65,7 @@ const LandingPage = () => {
               Log In
             </Button>
             <Button
-              onClick={() => router.push("/auth")}
+              onClick={() => router.push("/signup")}
               className="bg-[#F2E8D0] text-[#4A1414] px-6 py-2 rounded-full font-semibold hover:bg-[#F8ECEC] transition duration-300"
             >
               Sign Up
