@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Utensils } from "lucide-react";
+import { Search } from "lucide-react";
 
 interface Restaurant {
   id: number;
@@ -41,7 +41,7 @@ const HomePage = () => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [cuisines, setCuisines] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-const [totalPages, setTotalPages] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -101,11 +101,11 @@ const [totalPages, setTotalPages] = useState(1);
     }
   };  
   
-
   const handleFilter = async () => {
+    setRestaurants([]); // Clear current restaurant list saat fetch ulang
     try {
       const queryParams = new URLSearchParams({
-        cuisine: cuisineType,
+        cuisine: cuisineType || "", // Kirim nilai cuisineType ke backend
         priceRange: priceRange.join("-"),
         page: "1", // Reset ke halaman pertama
       }).toString();
@@ -116,13 +116,22 @@ const [totalPages, setTotalPages] = useState(1);
       }
   
       const { restaurants: fetchedRestaurants, totalPages: fetchedTotalPages } = await response.json();
-      setRestaurants(fetchedRestaurants);
-      setTotalPages(fetchedTotalPages);
+
+      // Filter hasil di frontend jika backend belum melakukan filter
+      const filteredRestaurants = fetchedRestaurants.filter((restaurant: Restaurant) =>
+        restaurant.cuisines
+          ?.split(",")
+          .map((cuisine) => cuisine.trim().toLowerCase())
+          .includes(cuisineType.toLowerCase())
+      );
+
+      setRestaurants(filteredRestaurants); // Set hasil restoran yang difilter
+      setTotalPages(fetchedTotalPages); // Set jumlah halaman total
       setCurrentPage(1); // Reset ke halaman pertama
     } catch (error) {
       console.error("Error fetching restaurants:", error);
     }
-  };   
+  };  
 
   if (status === "loading") {
     return (
@@ -193,7 +202,7 @@ const [totalPages, setTotalPages] = useState(1);
           {/* Search Bar */}
           <div className="w-full max-w-4xl mx-auto space-y-4 mb-8">
             <div className="flex space-x-2">
-            <Input
+              <Input
                 type="text"
                 placeholder="Search for cuisines or restaurants"
                 className=" flex-grow w-64 md:w-80 pl-10 pr-4 py-2 rounded-full bg-white/10 backdrop-blur-md text-[#F8ECEC] placeholder-[#F8ECEC]/50 border-[#D9A5A5] focus:border-[#F8ECEC]"
@@ -204,7 +213,7 @@ const [totalPages, setTotalPages] = useState(1);
               </Button>
             </div>
             <div className="flex space-x-2">
-              <Select>
+              <Select onValueChange={(value) => setCuisineType(value)}>
                 <SelectTrigger className="flex-grow bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5]">
                   <SelectValue placeholder="Cuisine Type" />
                 </SelectTrigger>
@@ -238,19 +247,6 @@ const [totalPages, setTotalPages] = useState(1);
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
-            {/* Cuisine Type */}
-            <div>
-              {}
-            </div>
-
-            {}
-
-            {}
-            <div>
-              {}
-            </div>
-          </div>
           <div className="mt-6 md:mt-8 text-center">
             <Button
               onClick={handleFilter}
@@ -264,61 +260,61 @@ const [totalPages, setTotalPages] = useState(1);
 
       {/* Explore Section */}
       <section id="explore" className="relative py-12 md:py-16 px-4 md:px-6">
-  <h2 className="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8 text-[#D9D1BE]">
-    Explore Restaurants Near You
-  </h2>
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10 max-w-5xl mx-auto">
-    {restaurants.length > 0 ? (
-      restaurants.map((restaurant, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: index * 0.1 }}
-        >
-          <Card className="bg-[#4A1414] border border-[#D9A5A5]/30">
-            <CardHeader>
-              <CardTitle className="text-[#D9D1BE]">{restaurant.name}</CardTitle>
-              <CardDescription className="text-[#F8ECEC]/80">
-                {restaurant.city || "City not available"}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-[#F8ECEC]/60">
-                Cuisines: {restaurant.cuisines || "N/A"}
-              </p>
-              <p className="text-sm text-[#F8ECEC]/60">
-                Avg Cost: {restaurant.average_cost || "N/A"}
-              </p>
-            </CardContent>
-          </Card>
-        </motion.div>
-      ))
-    ) : (
-      <p className="text-center text-[#F8ECEC]/80">No restaurants found</p>
-    )}
-  </div>
-</section>
+        <h2 className="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8 text-[#D9D1BE]">
+          Explore Restaurants Near You
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10 max-w-5xl mx-auto">
+          {restaurants.length > 0 ? (
+            restaurants.map((restaurant, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+              >
+                <Card className="bg-[#4A1414] border border-[#D9A5A5]/30">
+                  <CardHeader>
+                    <CardTitle className="text-[#D9D1BE]">{restaurant.name}</CardTitle>
+                    <CardDescription className="text-[#F8ECEC]/80">
+                      {restaurant.city || "City not available"}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-[#F8ECEC]/60">
+                      Cuisines: {restaurant.cuisines || "N/A"}
+                    </p>
+                    <p className="text-sm text-[#F8ECEC]/60">
+                      Avg Cost: {restaurant.average_cost || "N/A"}
+                    </p>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            ))
+          ) : (
+            <p className="text-center text-[#F8ECEC]/80">No restaurants found</p>
+          )}
+        </div>
+      </section>
 
-<div className="flex justify-center items-center space-x-4 mt-8">
-  <Button
-    disabled={currentPage === 1}
-    onClick={() => handlePageChange(currentPage - 1)}
-    className="bg-[#CDC69A] text-[#290102]"
-  >
-    Previous
-  </Button>
-  <span className="text-[#F8ECEC]">
-    Page {currentPage} of {totalPages}
-  </span>
-  <Button
-    disabled={currentPage === totalPages}
-    onClick={() => handlePageChange(currentPage + 1)}
-    className="bg-[#CDC69A] text-[#290102]"
-  >
-    Next
-  </Button>
-</div>
+      <div className="flex justify-center items-center space-x-4 mt-8">
+        <Button
+          disabled={currentPage === 1}
+          onClick={() => handlePageChange(currentPage - 1)}
+          className="bg-[#CDC69A] text-[#290102]"
+        >
+          Previous
+        </Button>
+        <span className="text-[#F8ECEC]">
+          Page {currentPage} of {totalPages}
+        </span>
+        <Button
+          disabled={currentPage === totalPages}
+          onClick={() => handlePageChange(currentPage + 1)}
+          className="bg-[#CDC69A] text-[#290102]"
+        >
+          Next
+        </Button>
+      </div>
 
       {/* Footer */}
       <footer className="py-8 md:py-12 bg-[#2C0A0A] text-[#F8ECEC]/80">
