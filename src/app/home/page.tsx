@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -97,9 +97,9 @@ const HomePage = () => {
     fetchCuisines();
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     signOut({ callbackUrl: "/" });
-  };
+  }, []);
 
   const isFilterApplied =
     cuisineType !== "" ||
@@ -107,59 +107,65 @@ const HomePage = () => {
     distance !== undefined ||
     searchTerm.trim() !== "";
 
-  const fetchRestaurants = async (page: number) => {
-    // **Prevent Fetching When No Filters Are Applied**
-    if (!isFilterApplied) {
-      setRestaurants([]);
-      setTotalPages(1);
-      setCurrentPage(1);
-      return;
-    }
-
-    try {
-      const queryParams = new URLSearchParams({
-        cuisine: cuisineType || "",
-        priceRange: priceRange.join("-"),
-        page: page.toString(),
-        distance: distance?.toString() || "",
-        userLatitude: userLatitude.toString(),
-        userLongitude: userLongitude.toString(),
-        searchTerm: searchTerm || "",
-      }).toString();
-
-      const response = await fetch(`/api/restaurants?${queryParams}`);
-      if (!response.ok) {
-        throw new Error(
-          `API responded with status ${response.status}: ${response.statusText}`
-        );
+  const fetchRestaurants = useCallback(
+    async (page: number) => {
+      // **Prevent Fetching When No Filters Are Applied**
+      if (!isFilterApplied) {
+        setRestaurants([]);
+        setTotalPages(1);
+        setCurrentPage(1);
+        return;
       }
 
-      const {
-        restaurants: fetchedRestaurants,
-        totalPages: fetchedTotalPages,
-      } = await response.json();
-      setRestaurants(fetchedRestaurants);
-      setTotalPages(fetchedTotalPages);
-      setCurrentPage(page);
-    } catch (error) {
-      console.error("Error fetching restaurants:", error);
-    }
-  };
+      try {
+        const queryParams = new URLSearchParams({
+          cuisine: cuisineType || "",
+          priceRange: priceRange.join("-"),
+          page: page.toString(),
+          distance: distance?.toString() || "",
+          userLatitude: userLatitude.toString(),
+          userLongitude: userLongitude.toString(),
+          searchTerm: searchTerm || "",
+        }).toString();
 
-  const handlePageChange = (newPage: number) => {
-    fetchRestaurants(newPage);
-  };
+        const response = await fetch(`/api/restaurants?${queryParams}`);
+        if (!response.ok) {
+          throw new Error(
+            `API responded with status ${response.status}: ${response.statusText}`
+          );
+        }
 
-  const handleFilter = () => {
+        const {
+          restaurants: fetchedRestaurants,
+          totalPages: fetchedTotalPages,
+        } = await response.json();
+        setRestaurants(fetchedRestaurants);
+        setTotalPages(fetchedTotalPages);
+        setCurrentPage(page);
+      } catch (error) {
+        console.error("Error fetching restaurants:", error);
+      }
+    },
+    [cuisineType, priceRange, distance, searchTerm, isFilterApplied]
+  );
+
+  const handlePageChange = useCallback(
+    (newPage: number) => {
+      fetchRestaurants(newPage);
+    },
+    [fetchRestaurants]
+  );
+
+  const handleFilter = useCallback(() => {
     fetchRestaurants(1);
-  };
+  }, [fetchRestaurants]);
 
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     fetchRestaurants(1);
-  };
+  }, [fetchRestaurants]);
 
   // **Updated Function: Handle Clear Filters**
-  const handleClearFilter = () => {
+  const handleClearFilter = useCallback(() => {
     setCuisineType("");
     setPriceRange([50000, 249900]);
     setDistance(undefined);
@@ -170,7 +176,7 @@ const HomePage = () => {
     setCurrentPage(1); // Reset to first page
     setTotalPages(1); // Reset total pages
     // No need to fetch restaurants after clearing filters
-  };
+  }, []);
 
   // **New useEffect: Handle Search Suggestions with Debouncing**
   useEffect(() => {
@@ -212,12 +218,12 @@ const HomePage = () => {
   }, [searchTerm]);
 
   // **New Function: Handle Suggestion Click**
-  const handleSuggestionClick = (suggestion: string) => {
+  const handleSuggestionClick = useCallback((suggestion: string) => {
     setSearchTerm(suggestion);
     setShowSuggestions(false);
     // Optionally, fetch restaurants based on the selected suggestion
     // fetchRestaurants(1);
-  };
+  }, [fetchRestaurants]);
 
   if (status === "loading") {
     return (
@@ -236,7 +242,7 @@ const HomePage = () => {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.9 }}
       >
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center space-x-2">
             <Image
               src="/images/logogelap.png"
@@ -253,7 +259,7 @@ const HomePage = () => {
           <Button
             onClick={handleLogout}
             variant="ghost"
-            className="text-[#F8ECEC] hover:text-[#CDC69A] transition duration-300 text-sm md:text-base"
+            className="text-[#F8ECEC] hover:text-[#CDC69A] transition duration-300 text-sm md:text-base mt-4 md:mt-0"
           >
             Log Out
           </Button>
@@ -281,13 +287,13 @@ const HomePage = () => {
             quality={100}
           />
         </motion.div>
-        <h1 className="text-4xl md:text-6xl font-extrabold relative z-10 text-[#F8ECEC] drop-shadow-lg">
+        <h1 className="text-3xl md:text-4xl lg:text-6xl font-extrabold relative z-10 text-[#F8ECEC] drop-shadow-lg">
           Welcome,{" "}
           <span className="text-[#CDC69A]">
             {session?.user?.name || "Guest"}!
           </span>
         </h1>
-        <p className="mt-4 text-xl md:text-2xl text-[#F8ECEC]/80 relative z-10">
+        <p className="mt-4 text-lg md:text-xl lg:text-2xl text-[#F8ECEC]/80 relative z-10">
           Discover your next favorite dining spot
         </p>
       </motion.section>
@@ -295,7 +301,7 @@ const HomePage = () => {
       {/* Filtering Section */}
       <section
         id="filter"
-        className="py-16 px-4 md:px-6 bg-gradient-to-b from-[#2C0A0A] to-[#290102]"
+        className="py-16 px-4 md:px-6 bg-gradient-to-b from-[#2C0A0A] to-[#290102] relative"
       >
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold mb-8 md:mb-12 text-center text-[#F8ECEC]">
@@ -308,7 +314,7 @@ const HomePage = () => {
               <Input
                 type="text"
                 placeholder="Search for city or restaurant name"
-                className="w-full pl-10 pr-12 py-3 rounded-full bg-white/10 backdrop-blur-md text-[#F8ECEC] placeholder-[#F8ECEC]/50 border-[#D9A5A5] focus:border-[#CDC69A] transition-all duration-300"
+                className="w-full pl-10 pr-12 py-3 rounded-full bg-white/10 backdrop-blur-md text-[#F8ECEC] placeholder-[#F8ECEC]/50 border border-[#D9A5A5] focus:border-[#CDC69A] transition-all duration-300"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onFocus={() => {
@@ -326,7 +332,7 @@ const HomePage = () => {
               <button
                 onClick={handleSearch}
                 className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-[#CDC69A] hover:text-[#F8ECEC] transition-colors duration-300 ${
-                  !isFilterApplied && "opacity-50 cursor-not-allowed"
+                  !isFilterApplied ? "opacity-50 cursor-not-allowed" : ""
                 }`}
                 disabled={!isFilterApplied}
                 aria-label="Search"
@@ -363,7 +369,7 @@ const HomePage = () => {
                   <SelectTrigger className="w-full bg-[#ffebbc] text-[#4A1414] border border-[#D9A5A5] hover:border-[#CDC69A] transition-colors duration-300">
                     <SelectValue placeholder="Cuisine Type" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#ffebbc] text-[#4A1414] border border-[#D9A5A5]">
+                  <SelectContent className="absolute mt-2 bg-[#ffebbc] text-[#4A1414] border border-[#D9A5A5] rounded-md shadow-lg z-50">
                     {cuisines.map((type) => (
                       <SelectItem key={type} value={type}>
                         {type}
@@ -385,7 +391,7 @@ const HomePage = () => {
                   <SelectTrigger className="w-full bg-[#ffebbc] text-[#4A1414] border border-[#D9A5A5] hover:border-[#CDC69A] transition-colors duration-300">
                     <SelectValue placeholder="Average Cost (50,000 - 249,900)" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#ffebbc] text-[#4A1414] border border-[#D9A5A5]">
+                  <SelectContent className="absolute mt-2 bg-[#ffebbc] text-[#4A1414] border border-[#D9A5A5] rounded-md shadow-lg z-50">
                     <SelectItem value="50000-100000">50,000 - 100,000</SelectItem>
                     <SelectItem value="100000-150000">
                       100,000 - 150,000
@@ -409,7 +415,7 @@ const HomePage = () => {
                   <SelectTrigger className="w-full bg-[#ffebbc] text-[#4A1414] border border-[#D9A5A5] hover:border-[#CDC69A] transition-colors duration-300">
                     <SelectValue placeholder="Distance" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#ffebbc] text-[#4A1414] border border-[#D9A5A5]">
+                  <SelectContent className="absolute mt-2 bg-[#ffebbc] text-[#4A1414] border border-[#D9A5A5] rounded-md shadow-lg z-50">
                     <SelectItem value="1">&lt; 1 km</SelectItem>
                     <SelectItem value="5">&lt; 5 km</SelectItem>
                     <SelectItem value="10">&lt; 10 km</SelectItem>
@@ -449,7 +455,7 @@ const HomePage = () => {
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-[#D9D1BE]">
           Explore the Best Dining Spots
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 max-w-6xl mx-auto">
           {restaurants.length > 0 ? (
             restaurants.map((restaurant, index) => (
               <motion.div
@@ -460,12 +466,14 @@ const HomePage = () => {
               >
                 <Card className="bg-[#F2E8D0] text-[#290102] overflow-hidden hover:shadow-xl transition duration-300">
                   <CardHeader className="p-0">
-                    <div className="relative h-48">
+                    <div className="relative h-48 md:h-56 lg:h-64">
                       <Image
                         src="/images/resto1.jpg" // Replace with restaurant image if available
                         alt={restaurant.name}
                         layout="fill"
                         objectFit="cover"
+                        className="rounded-t-lg"
+                        priority={index === 0} // Prioritize the first image
                       />
                     </div>
                   </CardHeader>
