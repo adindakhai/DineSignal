@@ -7,7 +7,14 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -15,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search } from 'lucide-react';
+import { Search, MapPin } from "lucide-react";
 
 interface Restaurant {
   id: number;
@@ -36,7 +43,10 @@ const HomePage = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [cuisineType, setCuisineType] = useState("");
-  const [priceRange, setPriceRange] = useState<string>("all"); // Menggunakan string kosong sebagai default
+  const [priceRange, setPriceRange] = useState<[number, number]>([
+    50000,
+    249900,
+  ]); // default full range
   const [distance, setDistance] = useState<number | undefined>(undefined);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [cuisines, setCuisines] = useState<string[]>([]);
@@ -49,7 +59,7 @@ const HomePage = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
-  // Lokasi user (misal hard-coded Jakarta)
+  // User location (hard-coded Jakarta)
   const userLatitude = -6.200000;
   const userLongitude = 106.816666;
 
@@ -64,7 +74,9 @@ const HomePage = () => {
       try {
         const response = await fetch("/api/restaurants/cuisines");
         if (!response.ok) {
-          throw new Error(`API responded with status ${response.status}: ${response.statusText}`);
+          throw new Error(
+            `API responded with status ${response.status}: ${response.statusText}`
+          );
         }
         const data: string[] = await response.json();
         const uniqueCuisines = Array.from(
@@ -89,6 +101,12 @@ const HomePage = () => {
     signOut({ callbackUrl: "/" });
   };
 
+  const isFilterApplied =
+    cuisineType !== "" ||
+    priceRange.join("-") !== "50000-249900" ||
+    distance !== undefined ||
+    searchTerm.trim() !== "";
+
   const fetchRestaurants = async (page: number) => {
     // **Prevent Fetching When No Filters Are Applied**
     if (!isFilterApplied) {
@@ -97,24 +115,29 @@ const HomePage = () => {
       setCurrentPage(1);
       return;
     }
-  
+
     try {
       const queryParams = new URLSearchParams({
         cuisine: cuisineType || "",
-        priceRange: priceRange || "",
+        priceRange: priceRange.join("-"),
         page: page.toString(),
         distance: distance?.toString() || "",
         userLatitude: userLatitude.toString(),
         userLongitude: userLongitude.toString(),
         searchTerm: searchTerm || "",
       }).toString();
-  
+
       const response = await fetch(`/api/restaurants?${queryParams}`);
       if (!response.ok) {
-        throw new Error(`API responded with status ${response.status}: ${response.statusText}`);
+        throw new Error(
+          `API responded with status ${response.status}: ${response.statusText}`
+        );
       }
-  
-      const { restaurants: fetchedRestaurants, totalPages: fetchedTotalPages } = await response.json();
+
+      const {
+        restaurants: fetchedRestaurants,
+        totalPages: fetchedTotalPages,
+      } = await response.json();
       setRestaurants(fetchedRestaurants);
       setTotalPages(fetchedTotalPages);
       setCurrentPage(page);
@@ -122,7 +145,6 @@ const HomePage = () => {
       console.error("Error fetching restaurants:", error);
     }
   };
-  
 
   const handlePageChange = (newPage: number) => {
     fetchRestaurants(newPage);
@@ -139,24 +161,16 @@ const HomePage = () => {
   // **Updated Function: Handle Clear Filters**
   const handleClearFilter = () => {
     setCuisineType("");
-    setPriceRange("");    
+    setPriceRange([50000, 249900]);
     setDistance(undefined);
     setSearchTerm("");
     setSuggestions([]);
     setShowSuggestions(false);
     setRestaurants([]); // Clear displayed restaurants
-    setCurrentPage(1);  // Reset to first page
-    setTotalPages(1);   // Reset total pages
+    setCurrentPage(1); // Reset to first page
+    setTotalPages(1); // Reset total pages
     // No need to fetch restaurants after clearing filters
   };
-
-  // **New Variable: Check if Any Filter is Applied**
-  const isFilterApplied =
-  cuisineType !== "" ||
-  priceRange !== "" ||
-  distance !== undefined ||
-  searchTerm.trim() !== "";
-
 
   // **New useEffect: Handle Search Suggestions with Debouncing**
   useEffect(() => {
@@ -174,7 +188,9 @@ const HomePage = () => {
     debounceTimeout.current = setTimeout(async () => {
       try {
         const response = await fetch(
-          `/api/restaurants/suggestions?query=${encodeURIComponent(searchTerm)}`
+          `/api/restaurants/suggestions?query=${encodeURIComponent(
+            searchTerm
+          )}`
         );
         if (!response.ok) {
           throw new Error(`API responded with status ${response.status}`);
@@ -212,20 +228,28 @@ const HomePage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#2C0A0A] text-[#F8ECEC] font-sans">
+    <div className="min-h-screen bg-black bg-opacity-50 text-[#F8ECEC] font-sans">
       {/* Header */}
       <motion.header
-        className="sticky top-0 mx-auto bg-opacity-90 backdrop-blur-md bg-gradient-to-r from-[#4A1414] to-[#2C0A0A] z-50 px-4 md:px-6 py-4 shadow-lg"
+        className="sticky top-0 mx-auto bg-opacity-50 backdrop-blur-md bg-[#4A1414] z-50 px-6 py-4 shadow-lg"
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.9 }}
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-2">
+            <Image
+              src="/images/logogelap.png"
+              alt="DineSignal Logo"
+              width={35} // Adjust size as needed
+              height={35} // Adjust size as needed
+              className="rounded-full"
+            />
             <span className="text-2xl md:text-3xl font-bold tracking-wider text-[#F8ECEC]">
               Dine<span className="text-[#CDC69A] font-extrabold">Signal</span>
             </span>
           </div>
+
           <Button
             onClick={handleLogout}
             variant="ghost"
@@ -258,7 +282,10 @@ const HomePage = () => {
           />
         </motion.div>
         <h1 className="text-4xl md:text-6xl font-extrabold relative z-10 text-[#F8ECEC] drop-shadow-lg">
-          Welcome, <span className="text-[#CDC69A]">{session?.user?.name || "Guest"}!</span>
+          Welcome,{" "}
+          <span className="text-[#CDC69A]">
+            {session?.user?.name || "Guest"}!
+          </span>
         </h1>
         <p className="mt-4 text-xl md:text-2xl text-[#F8ECEC]/80 relative z-10">
           Discover your next favorite dining spot
@@ -266,7 +293,10 @@ const HomePage = () => {
       </motion.section>
 
       {/* Filtering Section */}
-      <section id="filter" className="py-16 px-4 md:px-6 bg-gradient-to-b from-[#2C0A0A] to-[#4A1414]">
+      <section
+        id="filter"
+        className="py-16 px-4 md:px-6 bg-gradient-to-b from-[#2C0A0A] to-[#290102]"
+      >
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-bold mb-8 md:mb-12 text-center text-[#F8ECEC]">
             Find Your Perfect Meal
@@ -296,8 +326,7 @@ const HomePage = () => {
               <button
                 onClick={handleSearch}
                 className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-[#CDC69A] hover:text-[#F8ECEC] transition-colors duration-300 ${
-                  (!isFilterApplied) &&
-                  "opacity-50 cursor-not-allowed"
+                  !isFilterApplied && "opacity-50 cursor-not-allowed"
                 }`}
                 disabled={!isFilterApplied}
                 aria-label="Search"
@@ -325,52 +354,69 @@ const HomePage = () => {
           {/* Filters Section */}
           <div className="w-full max-w-4xl mx-auto space-y-4 mb-8">
             <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-              <Select onValueChange={(value) => setCuisineType(value)} value={cuisineType}>
-                <SelectTrigger className="flex-grow bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5] hover:border-[#CDC69A] transition-colors duration-300">
-                  <SelectValue placeholder="Cuisine Type" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5]">
-                  {cuisines.map((type) => (
-                    <SelectItem key={type} value={type}>
-                      {type}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-              onValueChange={(value) => {
-                  if (value === "all") {
-                    setPriceRange("all");
-                  } else {
-                    const [min, max] = value.split("-").map(Number);
-                    setPriceRange(`${min}-${max}`);
-                  }
-                }}
-                value={priceRange}
-              >
-                <SelectTrigger className="flex-grow bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5] hover:border-[#CDC69A] transition-colors duration-300">
-                  <SelectValue placeholder="Average Cost" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5]">
-                  <SelectItem value="all">Average</SelectItem> {/* Opsi "Semua" dengan value "all" */}
-                  <SelectItem value="50000-100000">50,000 - 100,000</SelectItem>
-                  <SelectItem value="100000-150000">100,000 - 150,000</SelectItem>
-                  <SelectItem value="150000-200000">150,000 - 200,000</SelectItem>
-                  <SelectItem value="200000-249900">200,000 - 249,900</SelectItem>
-                </SelectContent>
-              </Select>
+              {/* Cuisine Type Select */}
+              <div className="relative flex-grow">
+                <Select
+                  onValueChange={(value) => setCuisineType(value)}
+                  value={cuisineType}
+                >
+                  <SelectTrigger className="w-full bg-[#ffebbc] text-[#4A1414] border border-[#D9A5A5] hover:border-[#CDC69A] transition-colors duration-300">
+                    <SelectValue placeholder="Cuisine Type" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#ffebbc] text-[#4A1414] border border-[#D9A5A5]">
+                    {cuisines.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-              <Select onValueChange={(value) => setDistance(Number(value))} value={distance?.toString()}>
-                <SelectTrigger className="flex-grow bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5] hover:border-[#CDC69A] transition-colors duration-300">
-                  <SelectValue placeholder="Distance" />
-                </SelectTrigger>
-                <SelectContent className="bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5]">
-                  <SelectItem value="1">&lt; 1 km</SelectItem>
-                  <SelectItem value="5">&lt; 5 km</SelectItem>
-                  <SelectItem value="10">&lt; 10 km</SelectItem>
-                  <SelectItem value="20">&lt; 20 km</SelectItem>
-                </SelectContent>
-              </Select>
+              {/* Price Range Select */}
+              <div className="relative flex-grow">
+                <Select
+                  onValueChange={(value) => {
+                    const [min, max] = value.split("-").map(Number);
+                    setPriceRange([min, max]);
+                  }}
+                  value={priceRange.join("-")}
+                >
+                  <SelectTrigger className="w-full bg-[#ffebbc] text-[#4A1414] border border-[#D9A5A5] hover:border-[#CDC69A] transition-colors duration-300">
+                    <SelectValue placeholder="Average Cost (50,000 - 249,900)" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#ffebbc] text-[#4A1414] border border-[#D9A5A5]">
+                    <SelectItem value="50000-100000">50,000 - 100,000</SelectItem>
+                    <SelectItem value="100000-150000">
+                      100,000 - 150,000
+                    </SelectItem>
+                    <SelectItem value="150000-200000">
+                      150,000 - 200,000
+                    </SelectItem>
+                    <SelectItem value="200000-249900">
+                      200,000 - 249,900
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Distance Select */}
+              <div className="relative flex-grow">
+                <Select
+                  onValueChange={(value) => setDistance(Number(value))}
+                  value={distance?.toString() || ""}
+                >
+                  <SelectTrigger className="w-full bg-[#ffebbc] text-[#4A1414] border border-[#D9A5A5] hover:border-[#CDC69A] transition-colors duration-300">
+                    <SelectValue placeholder="Distance" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#ffebbc] text-[#4A1414] border border-[#D9A5A5]">
+                    <SelectItem value="1">&lt; 1 km</SelectItem>
+                    <SelectItem value="5">&lt; 5 km</SelectItem>
+                    <SelectItem value="10">&lt; 10 km</SelectItem>
+                    <SelectItem value="20">&lt; 20 km</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
@@ -378,15 +424,16 @@ const HomePage = () => {
           <div className="flex justify-center space-x-4 mt-8 md:mt-12">
             <Button
               onClick={handleFilter}
-              className="bg-[#CDC69A] text-[#290102] px-8 py-3 rounded-full font-bold text-lg shadow-lg hover:bg-[#D9D1BE] transition-colors duration-300"
+              className={`bg-[#CDC69A] text-[#290102] px-8 py-3 rounded-full font-bold text-lg shadow-lg hover:bg-[#D9D1BE] transition-colors duration-300 ${
+                !isFilterApplied ? "opacity-50 cursor-not-allowed" : ""
+              }`}
               disabled={!isFilterApplied}
             >
               Apply Filters
             </Button>
             <Button
               onClick={handleClearFilter}
-              variant="outline"
-              className="text-[#F8ECEC] hover:text-[#CDC69A] border-[#F8ECEC] hover:border-[#CDC69A] transition-all duration-300"
+              className="bg-[#CDC69A] text-[#290102] px-8 py-3 rounded-full font-bold text-lg shadow-lg hover:bg-[#D9D1BE] transition-colors duration-300"
             >
               Clear Filters
             </Button>
@@ -395,9 +442,12 @@ const HomePage = () => {
       </section>
 
       {/* Explore Section */}
-      <section id="explore" className="relative py-16 md:py-24 px-4 md:px-6 bg-gradient-to-b from-[#4A1414] to-[#2C0A0A]">
+      <section
+        id="explore"
+        className="relative py-16 md:py-24 px-4 md:px-6 bg-gradient-to-b from-[#290201] to-[#290201]"
+      >
         <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-[#D9D1BE]">
-          Explore Restaurants
+          Explore the Best Dining Spots
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 max-w-6xl mx-auto">
           {restaurants.length > 0 ? (
@@ -408,19 +458,30 @@ const HomePage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Card className="bg-[#4A1414] border border-[#D9A5A5]/30 hover:border-[#CDC69A] transition-all duration-300 transform hover:scale-105">
-                  <CardHeader>
-                    <CardTitle className="text-[#D9D1BE] text-xl md:text-2xl">{restaurant.name}</CardTitle>
-                    <CardDescription className="text-[#F8ECEC]/80 text-sm md:text-base">
+                <Card className="bg-[#F2E8D0] text-[#290102] overflow-hidden hover:shadow-xl transition duration-300">
+                  <CardHeader className="p-0">
+                    <div className="relative h-48">
+                      <Image
+                        src="/images/resto1.jpg" // Replace with restaurant image if available
+                        alt={restaurant.name}
+                        layout="fill"
+                        objectFit="cover"
+                      />
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-6">
+                    <CardTitle className="text-xl font-semibold mb-2 text-[#4A1414]">
+                      {restaurant.name}
+                    </CardTitle>
+                    <CardDescription className="text-[#4A1414]/80 mb-4">
                       {restaurant.city || "City not available"}
                     </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm md:text-base text-[#F8ECEC]/70 mb-2">
+                    <p className="text-sm md:text-base text-[#4A1414]/70 mb-2">
                       Cuisines: {restaurant.cuisines || "N/A"}
                     </p>
-                    <p className="text-sm md:text-base text-[#F8ECEC]/70">
-                      Avg Cost: {restaurant.average_cost?.toLocaleString("id-ID", {
+                    <p className="text-sm md:text-base text-[#4A1414]/70 mb-2">
+                      Avg Cost:{" "}
+                      {restaurant.average_cost?.toLocaleString("id-ID", {
                         style: "currency",
                         currency: "IDR",
                         minimumFractionDigits: 0,
@@ -428,44 +489,59 @@ const HomePage = () => {
                     </p>
                     {restaurant.aggregate_rating && (
                       <div className="mt-4 flex items-center">
-                        <span className="text-[#CDC69A] mr-2">★</span>
-                        <span className="text-[#F8ECEC]">{restaurant.aggregate_rating.toFixed(1)}</span>
-                        <span className="text-[#F8ECEC]/60 ml-2">({restaurant.votes} votes)</span>
+                        <span className="text-black mr-2">★</span>
+                        <span className="text-[#290201]">
+                          {restaurant.aggregate_rating.toFixed(1)}
+                        </span>
+                        <span className="text-[#290201]/60 ml-2">
+                          ({restaurant.votes} votes)
+                        </span>
                       </div>
                     )}
                   </CardContent>
+                  <CardFooter className="p-6 pt-0">
+                    <Button className="w-full bg-[#430d0e] text-[#D9D1BE] rounded-full font-bold hover:bg-[#a2725c] transition duration-300">
+                      View Details
+                    </Button>
+                  </CardFooter>
                 </Card>
               </motion.div>
             ))
           ) : (
-            <p className="text-center text-[#F8ECEC]/80 col-span-full text-lg">No restaurants found</p>
+            <p className="text-center text-[#F8ECEC]/80 col-span-full text-lg">
+              No restaurants found
+            </p>
           )}
         </div>
       </section>
 
       {/* Pagination */}
-      <div className="flex justify-center items-center space-x-6 mt-12 mb-16">
-        <Button
-          disabled={currentPage === 1}
-          onClick={() => handlePageChange(currentPage - 1)}
-          className="bg-[#CDC69A] text-[#290102] hover:bg-[#D9D1BE] transition-colors duration-300"
-        >
-          Previous
-        </Button>
-        <span className="text-[#F8ECEC] text-lg">
-          Page {currentPage} of {totalPages}
-        </span>
-        <Button
-          disabled={currentPage === totalPages}
-          onClick={() => handlePageChange(currentPage + 1)}
-          className="bg-[#CDC69A] text-[#290102] hover:bg-[#D9D1BE] transition-colors duration-300"
-        >
-          Next
-        </Button>
-      </div>
+      {totalPages > 1 && (
+        <section className="py-8 px-4 md:px-6 bg-[#290201]">
+          <div className="flex justify-center items-center space-x-6">
+            <Button
+              disabled={currentPage === 1}
+              onClick={() => handlePageChange(currentPage - 1)}
+              className="bg-[#CDC69A] text-[#290102] hover:bg-[#D9D1BE] transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </Button>
+            <span className="text-[#F8ECEC] text-lg">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              disabled={currentPage === totalPages}
+              onClick={() => handlePageChange(currentPage + 1)}
+              className="bg-[#CDC69A] text-[#290102] hover:bg-[#D9D1BE] transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </Button>
+          </div>
+        </section>
+      )}
 
       {/* Footer */}
-      <footer className="py-12 md:py-16 bg-gradient-to-b from-[#2C0A0A] to-[#4A1414] text-[#F8ECEC]/80">
+      <footer className="py-12 md:py-16 bg-[#290201] text-[#F8ECEC]/80">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* Footer sections can be added here */}
@@ -480,4 +556,3 @@ const HomePage = () => {
 };
 
 export default HomePage;
-
