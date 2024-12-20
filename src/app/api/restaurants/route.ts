@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import prisma from "prisma/prisma";
 
 function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -28,7 +29,7 @@ export async function GET(req: NextRequest) {
 
   try {
     // Build where clause
-    let whereClause: any = {};
+    const whereClause: Prisma.restaurantsWhereInput = {};
 
     if (cuisine) {
       whereClause.cuisines = { contains: cuisine, mode: "insensitive" };

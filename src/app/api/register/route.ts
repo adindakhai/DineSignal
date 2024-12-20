@@ -2,10 +2,17 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
 import { hash } from "bcryptjs";
 
+// Definisikan tipe untuk request body
+interface RequestBody {
+  name: string;
+  email: string;
+  password: string;
+}
+
 export async function POST(req: Request) {
   try {
-    // Debugging untuk melihat request body
-    const body = await req.json();
+    // Parsing body dari request
+    const body: RequestBody = await req.json();
     console.log("Request body received:", body);
 
     const { name, email, password } = body;
@@ -51,12 +58,14 @@ export async function POST(req: Request) {
       { message: "User created successfully", user },
       { status: 201 }
     );
-  } catch (error: any) {
+  } catch (error) {
+    // Menentukan tipe error
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     console.error("Internal server error:", error);
 
     // Pastikan selalu merespons dalam format JSON
     return NextResponse.json(
-      { error: "Internal server error", details: error.message || error },
+      { error: "Internal server error", details: errorMessage },
       { status: 500 }
     );
   }

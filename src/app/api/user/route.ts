@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prismadb";
-import { getSession } from "next-auth/react"
+import { getSession } from "next-auth/react";
 
-export async function GET(req: Request, res: Response) {
+export async function GET(req: Request) {
   try {
     const session = await getSession(); // Retrieves the session
-    console.log("SESSION", session)
+    console.log("SESSION", session);
 
     // if (!token) {
     //   return NextResponse.json(
@@ -22,7 +22,7 @@ export async function GET(req: Request, res: Response) {
     //     { status: 401 }
     //   );
     // }
-    const userId = ""
+    const userId = "";
 
     // Fetch user data from the database
     const user = await prisma.user.findUnique({
@@ -31,18 +31,19 @@ export async function GET(req: Request, res: Response) {
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "User not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     // Return the user's name
     return NextResponse.json({ name: user.name }, { status: 200 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error fetching user data:", error);
+
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+
     return NextResponse.json(
-      { error: "Internal server error", details: error.message || error },
+      { error: "Internal server error", details: errorMessage },
       { status: 500 }
     );
   }

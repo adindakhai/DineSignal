@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { ChefHat, Mail, Lock, User } from 'lucide-react';
+import { Mail, Lock, User } from 'lucide-react';
 
 const SignupPage = () => {
   const [signupData, setSignupData] = useState({

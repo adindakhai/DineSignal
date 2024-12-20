@@ -95,21 +95,22 @@ const LandingPage = () => {
           />
         </motion.div>
         <motion.h1
-          className="text-6xl font-extrabold leading-tight relative z-10"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          Discover Your <span className="text-[#ffebbc]">Perfect Place</span>
-        </motion.h1>
-        <motion.p
-          className="mt-6 text-xl max-w-2xl mx-auto text-[#ffebbc] relative z-10"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-        >
-          Uncover culinary gems tailored to your taste, budget, and location.
-        </motion.p>
+  className="text-6xl font-extrabold leading-tight relative z-10"
+  initial={{ y: 20, opacity: 0 }}
+  animate={{ y: 0, opacity: 1 }}
+  transition={{ duration: 0.8, delay: 0.2 }}
+>
+  Discover Your <span className="text-[#ffebbc]">Perfect Place</span>
+</motion.h1>
+<motion.p
+  className="mt-6 text-xl max-w-2xl mx-auto text-[#ffebbc] relative z-10"
+  initial={{ y: 20, opacity: 0 }}
+  animate={{ y: 0, opacity: 1 }}
+  transition={{ duration: 0.8, delay: 0.4 }}
+>
+  Uncover culinary gems tailored to your taste, budget, and location.
+</motion.p>
+
         <motion.div
           className="mt-10 relative z-10"
           initial={{ y: 20, opacity: 0 }}

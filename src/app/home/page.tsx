@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, MapPin } from "lucide-react";
+import { Search } from "lucide-react"; // `MapPin` removed as it is not used.
 
 interface Restaurant {
   id: number;
@@ -60,7 +60,7 @@ const HomePage = () => {
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // User location (hard-coded Jakarta)
-  const userLatitude = -6.200000;
+  const userLatitude = -6.2;
   const userLongitude = 106.816666;
 
   useEffect(() => {
@@ -109,7 +109,6 @@ const HomePage = () => {
 
   const fetchRestaurants = useCallback(
     async (page: number) => {
-      // **Prevent Fetching When No Filters Are Applied**
       if (!isFilterApplied) {
         setRestaurants([]);
         setTotalPages(1);
@@ -146,7 +145,15 @@ const HomePage = () => {
         console.error("Error fetching restaurants:", error);
       }
     },
-    [cuisineType, priceRange, distance, searchTerm, isFilterApplied]
+    [
+      cuisineType,
+      priceRange,
+      distance,
+      searchTerm,
+      isFilterApplied,
+      userLatitude,
+      userLongitude,
+    ] // Added `userLatitude` and `userLongitude` as dependencies
   );
 
   const handlePageChange = useCallback(
@@ -164,7 +171,6 @@ const HomePage = () => {
     fetchRestaurants(1);
   }, [fetchRestaurants]);
 
-  // **Updated Function: Handle Clear Filters**
   const handleClearFilter = useCallback(() => {
     setCuisineType("");
     setPriceRange([50000, 249900]);
@@ -172,13 +178,11 @@ const HomePage = () => {
     setSearchTerm("");
     setSuggestions([]);
     setShowSuggestions(false);
-    setRestaurants([]); // Clear displayed restaurants
-    setCurrentPage(1); // Reset to first page
-    setTotalPages(1); // Reset total pages
-    // No need to fetch restaurants after clearing filters
+    setRestaurants([]);
+    setCurrentPage(1);
+    setTotalPages(1);
   }, []);
 
-  // **New useEffect: Handle Search Suggestions with Debouncing**
   useEffect(() => {
     if (searchTerm.trim() === "") {
       setSuggestions([]);
@@ -186,7 +190,6 @@ const HomePage = () => {
       return;
     }
 
-    // Debounce the API call by 300ms
     if (debounceTimeout.current) {
       clearTimeout(debounceTimeout.current);
     }
@@ -209,7 +212,6 @@ const HomePage = () => {
       }
     }, 300);
 
-    // Cleanup timeout on unmount or when searchTerm changes
     return () => {
       if (debounceTimeout.current) {
         clearTimeout(debounceTimeout.current);
@@ -217,13 +219,10 @@ const HomePage = () => {
     };
   }, [searchTerm]);
 
-  // **New Function: Handle Suggestion Click**
   const handleSuggestionClick = useCallback((suggestion: string) => {
     setSearchTerm(suggestion);
     setShowSuggestions(false);
-    // Optionally, fetch restaurants based on the selected suggestion
-    // fetchRestaurants(1);
-  }, [fetchRestaurants]);
+  }, []);
 
   if (status === "loading") {
     return (
