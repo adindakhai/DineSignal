@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -15,7 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search } from "lucide-react";
+import { Search } from 'lucide-react';
 
 interface Restaurant {
   id: number;
@@ -43,6 +43,11 @@ const HomePage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // **New States for Search Suggestions**
+  const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
 
   // Lokasi user (misal hard-coded Jakarta)
   const userLatitude = -6.200000;
@@ -85,6 +90,14 @@ const HomePage = () => {
   };
 
   const fetchRestaurants = async (page: number) => {
+    // **Prevent Fetching When No Filters Are Applied**
+    if (!isFilterApplied) {
+      setRestaurants([]);
+      setTotalPages(1);
+      setCurrentPage(1);
+      return;
+    }
+
     try {
       const queryParams = new URLSearchParams({
         cuisine: cuisineType || "",
@@ -122,6 +135,73 @@ const HomePage = () => {
     fetchRestaurants(1);
   };
 
+  // **Updated Function: Handle Clear Filters**
+  const handleClearFilter = () => {
+    setCuisineType("");
+    setPriceRange([50000, 249900]);
+    setDistance(undefined);
+    setSearchTerm("");
+    setSuggestions([]);
+    setShowSuggestions(false);
+    setRestaurants([]); // Clear displayed restaurants
+    setCurrentPage(1);  // Reset to first page
+    setTotalPages(1);   // Reset total pages
+    // No need to fetch restaurants after clearing filters
+  };
+
+  // **New Variable: Check if Any Filter is Applied**
+  const isFilterApplied =
+    cuisineType !== "" ||
+    priceRange[0] !== 50000 ||
+    priceRange[1] !== 249900 ||
+    distance !== undefined ||
+    searchTerm.trim() !== "";
+
+  // **New useEffect: Handle Search Suggestions with Debouncing**
+  useEffect(() => {
+    if (searchTerm.trim() === "") {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    // Debounce the API call by 300ms
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+
+    debounceTimeout.current = setTimeout(async () => {
+      try {
+        const response = await fetch(
+          `/api/restaurants/suggestions?query=${encodeURIComponent(searchTerm)}`
+        );
+        if (!response.ok) {
+          throw new Error(`API responded with status ${response.status}`);
+        }
+        const data: string[] = await response.json();
+        setSuggestions(data);
+        setShowSuggestions(true);
+      } catch (error) {
+        console.error("Error fetching suggestions:", error);
+      }
+    }, 300);
+
+    // Cleanup timeout on unmount or when searchTerm changes
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, [searchTerm]);
+
+  // **New Function: Handle Suggestion Click**
+  const handleSuggestionClick = (suggestion: string) => {
+    setSearchTerm(suggestion);
+    setShowSuggestions(false);
+    // Optionally, fetch restaurants based on the selected suggestion
+    // fetchRestaurants(1);
+  };
+
   if (status === "loading") {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#2C0A0A] text-[#F8ECEC]">
@@ -134,21 +214,21 @@ const HomePage = () => {
     <div className="min-h-screen bg-[#2C0A0A] text-[#F8ECEC] font-sans">
       {/* Header */}
       <motion.header
-        className="sticky top-0 mx-auto bg-opacity-70 backdrop-blur-md bg-[#4A1414] z-50 px-4 md:px-6 py-4 shadow-lg"
+        className="sticky top-0 mx-auto bg-opacity-90 backdrop-blur-md bg-gradient-to-r from-[#4A1414] to-[#2C0A0A] z-50 px-4 md:px-6 py-4 shadow-lg"
         initial={{ y: -50, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-2">
-            <span className="text-xl md:text-2xl font-bold tracking-wider text-[#F8ECEC]">
-              Dine<span className="text-[#CDC69A]">Signal</span>
+            <span className="text-2xl md:text-3xl font-bold tracking-wider text-[#F8ECEC]">
+              Dine<span className="text-[#CDC69A] font-extrabold">Signal</span>
             </span>
           </div>
           <Button
             onClick={handleLogout}
             variant="ghost"
-            className="text-[#F8ECEC] hover:text-[#dd7f7f] transition duration-300"
+            className="text-[#F8ECEC] hover:text-[#CDC69A] transition duration-300 text-sm md:text-base"
           >
             Log Out
           </Button>
@@ -157,7 +237,7 @@ const HomePage = () => {
 
       {/* Welcome Section */}
       <motion.section
-        className="relative text-center py-24 md:py-32 px-4 md:px-6 overflow-hidden"
+        className="relative text-center py-32 md:py-48 px-4 md:px-6 overflow-hidden"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8 }}
@@ -165,7 +245,7 @@ const HomePage = () => {
         <motion.div
           className="absolute inset-0 z-0"
           initial={{ scale: 1.2, opacity: 0 }}
-          animate={{ scale: 1, opacity: 0.1 }}
+          animate={{ scale: 1, opacity: 0.15 }}
           transition={{ duration: 10, repeat: Infinity, repeatType: "reverse" }}
         >
           <Image
@@ -176,39 +256,79 @@ const HomePage = () => {
             quality={100}
           />
         </motion.div>
-        <h1 className="text-3xl md:text-5xl font-extrabold relative z-10">
-          Welcome, <span className="text-[#D9D1BE]">{session?.user?.name || "Guest"}!</span>
+        <h1 className="text-4xl md:text-6xl font-extrabold relative z-10 text-[#F8ECEC] drop-shadow-lg">
+          Welcome, <span className="text-[#CDC69A]">{session?.user?.name || "Guest"}!</span>
         </h1>
+        <p className="mt-4 text-xl md:text-2xl text-[#F8ECEC]/80 relative z-10">
+          Discover your next favorite dining spot
+        </p>
       </motion.section>
 
       {/* Filtering Section */}
-      <section id="filter" className="py-16 px-4 md:px-6 bg-[#2C0A0A]">
+      <section id="filter" className="py-16 px-4 md:px-6 bg-gradient-to-b from-[#2C0A0A] to-[#4A1414]">
         <div className="max-w-5xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-bold mb-6 md:mb-8 text-center text-[#F8ECEC]">
-            Filter Your Options
+          <h2 className="text-3xl md:text-4xl font-bold mb-8 md:mb-12 text-center text-[#F8ECEC]">
+            Find Your Perfect Meal
           </h2>
 
           {/* Search Bar */}
-          <div className="w-full max-w-4xl mx-auto space-y-4 mb-8">
-            <div className="flex space-x-2">
+          <div className="w-full max-w-4xl mx-auto space-y-4 mb-8 relative">
+            <div className="relative">
               <Input
                 type="text"
                 placeholder="Search for city or restaurant name"
-                className="flex-grow w-64 md:w-80 pl-10 pr-4 py-2 rounded-full bg-white/10 backdrop-blur-md text-[#F8ECEC] placeholder-[#F8ECEC]/50 border-[#D9A5A5] focus:border-[#F8ECEC]"
+                className="w-full pl-10 pr-12 py-3 rounded-full bg-white/10 backdrop-blur-md text-[#F8ECEC] placeholder-[#F8ECEC]/50 border-[#D9A5A5] focus:border-[#CDC69A] transition-all duration-300"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                onFocus={() => {
+                  if (suggestions.length > 0) setShowSuggestions(true);
+                }}
+                onBlur={() => {
+                  setTimeout(() => setShowSuggestions(false), 200);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && isFilterApplied) {
+                    handleSearch();
+                  }
+                }}
               />
-              <Button className="bg-[#CDC69A] text-[#290102]" onClick={handleSearch}>
-                <Search className="h-4 w-4 mr-2" />
-                Search
-              </Button>
+              <button
+                onClick={handleSearch}
+                className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-[#CDC69A] hover:text-[#F8ECEC] transition-colors duration-300 ${
+                  (!isFilterApplied) &&
+                  "opacity-50 cursor-not-allowed"
+                }`}
+                disabled={!isFilterApplied}
+                aria-label="Search"
+              >
+                <Search className="h-5 w-5" />
+              </button>
+
+              {/* Suggestions Dropdown */}
+              {showSuggestions && suggestions.length > 0 && (
+                <ul className="absolute top-full left-0 right-0 bg-[#4A1414] border border-[#D9A5A5] rounded-md mt-1 max-h-60 overflow-y-auto z-10 shadow-lg">
+                  {suggestions.map((suggestion, index) => (
+                    <li
+                      key={index}
+                      className="px-4 py-2 hover:bg-[#CDC69A] hover:text-[#290102] cursor-pointer transition-colors duration-200"
+                      onClick={() => handleSuggestionClick(suggestion)}
+                    >
+                      {suggestion}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
-            <div className="flex space-x-2">
-              <Select onValueChange={(value) => setCuisineType(value)}>
-                <SelectTrigger className="flex-grow bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5]">
+          </div>
+
+          {/* Filters Section */}
+          <div className="w-full max-w-4xl mx-auto space-y-4 mb-8">
+            <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
+              <Select onValueChange={(value) => setCuisineType(value)} value={cuisineType}>
+                <SelectTrigger className="flex-grow bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5] hover:border-[#CDC69A] transition-colors duration-300">
                   <SelectValue placeholder="Cuisine Type" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#4A1414] text-[#F8ECEC]">
+                <SelectContent className="bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5]">
                   {cuisines.map((type) => (
                     <SelectItem key={type} value={type}>
                       {type}
@@ -217,17 +337,17 @@ const HomePage = () => {
                 </SelectContent>
               </Select>
 
-              {/* Average Cost Filter */}
               <Select
                 onValueChange={(value) => {
                   const [min, max] = value.split("-").map(Number);
                   setPriceRange([min, max]);
                 }}
+                value={priceRange.join("-")}
               >
-                <SelectTrigger className="flex-grow bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5]">
+                <SelectTrigger className="flex-grow bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5] hover:border-[#CDC69A] transition-colors duration-300">
                   <SelectValue placeholder="Average Cost (50,000 - 249,900)" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#4A1414] text-[#F8ECEC]">
+                <SelectContent className="bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5]">
                   <SelectItem value="50000-100000">50,000 - 100,000</SelectItem>
                   <SelectItem value="100000-150000">100,000 - 150,000</SelectItem>
                   <SelectItem value="150000-200000">150,000 - 200,000</SelectItem>
@@ -235,12 +355,11 @@ const HomePage = () => {
                 </SelectContent>
               </Select>
 
-              {/* Distance */}
-              <Select onValueChange={(value) => setDistance(Number(value))}>
-                <SelectTrigger className="flex-grow bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5]">
+              <Select onValueChange={(value) => setDistance(Number(value))} value={distance?.toString()}>
+                <SelectTrigger className="flex-grow bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5] hover:border-[#CDC69A] transition-colors duration-300">
                   <SelectValue placeholder="Distance" />
                 </SelectTrigger>
-                <SelectContent className="bg-[#4A1414] text-[#F8ECEC]">
+                <SelectContent className="bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5]">
                   <SelectItem value="1">&lt; 1 km</SelectItem>
                   <SelectItem value="5">&lt; 5 km</SelectItem>
                   <SelectItem value="10">&lt; 10 km</SelectItem>
@@ -250,23 +369,32 @@ const HomePage = () => {
             </div>
           </div>
 
-          <div className="mt-6 md:mt-8 text-center">
+          {/* Apply and Clear Filters Buttons */}
+          <div className="flex justify-center space-x-4 mt-8 md:mt-12">
             <Button
               onClick={handleFilter}
-              className="bg-[#CDC69A] text-[#290102] px-6 py-2 md:px-8 md:py-2 rounded-full font-bold text-lg shadow-lg"
+              className="bg-[#CDC69A] text-[#290102] px-8 py-3 rounded-full font-bold text-lg shadow-lg hover:bg-[#D9D1BE] transition-colors duration-300"
+              disabled={!isFilterApplied}
             >
               Apply Filters
+            </Button>
+            <Button
+              onClick={handleClearFilter}
+              variant="outline"
+              className="text-[#F8ECEC] hover:text-[#CDC69A] border-[#F8ECEC] hover:border-[#CDC69A] transition-all duration-300"
+            >
+              Clear Filters
             </Button>
           </div>
         </div>
       </section>
 
       {/* Explore Section */}
-      <section id="explore" className="relative py-12 md:py-16 px-4 md:px-6">
-        <h2 className="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8 text-[#D9D1BE]">
+      <section id="explore" className="relative py-16 md:py-24 px-4 md:px-6 bg-gradient-to-b from-[#4A1414] to-[#2C0A0A]">
+        <h2 className="text-3xl md:text-4xl font-bold text-center mb-12 text-[#D9D1BE]">
           Explore Restaurants
         </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-12 max-w-6xl mx-auto">
           {restaurants.length > 0 ? (
             restaurants.map((restaurant, index) => (
               <motion.div
@@ -275,57 +403,69 @@ const HomePage = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
               >
-                <Card className="bg-[#4A1414] border border-[#D9A5A5]/30">
+                <Card className="bg-[#4A1414] border border-[#D9A5A5]/30 hover:border-[#CDC69A] transition-all duration-300 transform hover:scale-105">
                   <CardHeader>
-                    <CardTitle className="text-[#D9D1BE]">{restaurant.name}</CardTitle>
-                    <CardDescription className="text-[#F8ECEC]/80">
+                    <CardTitle className="text-[#D9D1BE] text-xl md:text-2xl">{restaurant.name}</CardTitle>
+                    <CardDescription className="text-[#F8ECEC]/80 text-sm md:text-base">
                       {restaurant.city || "City not available"}
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm text-[#F8ECEC]/60">
+                    <p className="text-sm md:text-base text-[#F8ECEC]/70 mb-2">
                       Cuisines: {restaurant.cuisines || "N/A"}
                     </p>
-                    <p className="text-sm text-[#F8ECEC]/60">
-                      Avg Cost: {restaurant.average_cost || "N/A"}
+                    <p className="text-sm md:text-base text-[#F8ECEC]/70">
+                      Avg Cost: {restaurant.average_cost?.toLocaleString("id-ID", {
+                        style: "currency",
+                        currency: "IDR",
+                        minimumFractionDigits: 0,
+                      }) || "N/A"}
                     </p>
+                    {restaurant.aggregate_rating && (
+                      <div className="mt-4 flex items-center">
+                        <span className="text-[#CDC69A] mr-2">★</span>
+                        <span className="text-[#F8ECEC]">{restaurant.aggregate_rating.toFixed(1)}</span>
+                        <span className="text-[#F8ECEC]/60 ml-2">({restaurant.votes} votes)</span>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
             ))
           ) : (
-            <p className="text-center text-[#F8ECEC]/80">No restaurants found</p>
+            <p className="text-center text-[#F8ECEC]/80 col-span-full text-lg">No restaurants found</p>
           )}
         </div>
       </section>
 
-      <div className="flex justify-center items-center space-x-4 mt-8">
+      {/* Pagination */}
+      <div className="flex justify-center items-center space-x-6 mt-12 mb-16">
         <Button
           disabled={currentPage === 1}
           onClick={() => handlePageChange(currentPage - 1)}
-          className="bg-[#CDC69A] text-[#290102]"
+          className="bg-[#CDC69A] text-[#290102] hover:bg-[#D9D1BE] transition-colors duration-300"
         >
           Previous
         </Button>
-        <span className="text-[#F8ECEC]">
+        <span className="text-[#F8ECEC] text-lg">
           Page {currentPage} of {totalPages}
         </span>
         <Button
           disabled={currentPage === totalPages}
           onClick={() => handlePageChange(currentPage + 1)}
-          className="bg-[#CDC69A] text-[#290102]"
+          className="bg-[#CDC69A] text-[#290102] hover:bg-[#D9D1BE] transition-colors duration-300"
         >
           Next
         </Button>
       </div>
 
       {/* Footer */}
-      <footer className="py-8 md:py-12 bg-[#2C0A0A] text-[#F8ECEC]/80">
+      <footer className="py-12 md:py-16 bg-gradient-to-b from-[#2C0A0A] to-[#4A1414] text-[#F8ECEC]/80">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {/* Footer sections */}
+            {/* Footer sections can be added here */}
           </div>
-          <div className="border-t border-[#F2E8D0]/20 mt-6 md:mt-8 pt-6 md:pt-8 text-center text-sm">
+          <div className="border-t border-[#F2E8D0]/20 mt-8 md:mt-12 pt-8 md:pt-12 text-center text-sm">
             <p>© 2024 DineSignal. All rights reserved.</p>
           </div>
         </div>
@@ -335,3 +475,4 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
