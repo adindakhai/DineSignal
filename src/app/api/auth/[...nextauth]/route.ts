@@ -76,5 +76,11 @@ export const authOptions: AuthOptions = {
   debug: true, // Enable debug mode
 };
 
-const handler = NextAuth(authOptions);
-export { handler as GET, handler as POST };
+// Handler untuk App Router
+import { NextApiHandler } from "next";
+
+const handler: NextApiHandler = NextAuth(authOptions);
+
+// Ekspor handler untuk metode HTTP
+export const GET = handler;
+export const POST = handler;
