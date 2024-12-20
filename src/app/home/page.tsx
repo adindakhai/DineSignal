@@ -36,7 +36,7 @@ const HomePage = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [cuisineType, setCuisineType] = useState("");
-  const [priceRange, setPriceRange] = useState([0, 100]);
+  const [priceRange, setPriceRange] = useState([50000, 249900]); // default full range sesuai permintaan
   const [distance, setDistance] = useState(5);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [cuisines, setCuisines] = useState<string[]>([]);
@@ -60,7 +60,7 @@ const HomePage = () => {
         const uniqueCuisines = Array.from(
           new Set(
             data
-              .flatMap((cuisine: string) => 
+              .flatMap((cuisine: string) =>
                 cuisine.split(",").map((item: string) => item.trim())
               )
               .filter((item: string) => item)
@@ -82,16 +82,16 @@ const HomePage = () => {
   const handlePageChange = async (newPage: number) => {
     try {
       const queryParams = new URLSearchParams({
-        cuisine: cuisineType,
+        cuisine: cuisineType || "",
         priceRange: priceRange.join("-"),
         page: newPage.toString(),
       }).toString();
-  
+
       const response = await fetch(`/api/restaurants?${queryParams}`);
       if (!response.ok) {
         throw new Error(`API responded with status ${response.status}: ${response.statusText}`);
       }
-  
+
       const { restaurants: fetchedRestaurants, totalPages: fetchedTotalPages } = await response.json();
       setRestaurants(fetchedRestaurants);
       setTotalPages(fetchedTotalPages);
@@ -99,39 +99,40 @@ const HomePage = () => {
     } catch (error) {
       console.error("Error fetching restaurants:", error);
     }
-  };  
-  
+  };
+
   const handleFilter = async () => {
-    setRestaurants([]); // Clear current restaurant list saat fetch ulang
+    setRestaurants([]); // Clear current restaurant list before fetch
     try {
       const queryParams = new URLSearchParams({
-        cuisine: cuisineType || "", // Kirim nilai cuisineType ke backend
+        cuisine: cuisineType || "",
         priceRange: priceRange.join("-"),
-        page: "1", // Reset ke halaman pertama
+        page: "1",
       }).toString();
-  
+
       const response = await fetch(`/api/restaurants?${queryParams}`);
       if (!response.ok) {
         throw new Error(`API responded with status ${response.status}: ${response.statusText}`);
       }
-  
+
       const { restaurants: fetchedRestaurants, totalPages: fetchedTotalPages } = await response.json();
 
-      // Filter hasil di frontend jika backend belum melakukan filter
+      // Frontend filter jika perlu (sebenarnya backend sudah filter)
       const filteredRestaurants = fetchedRestaurants.filter((restaurant: Restaurant) =>
+        !cuisineType ||
         restaurant.cuisines
           ?.split(",")
           .map((cuisine) => cuisine.trim().toLowerCase())
           .includes(cuisineType.toLowerCase())
       );
 
-      setRestaurants(filteredRestaurants); // Set hasil restoran yang difilter
-      setTotalPages(fetchedTotalPages); // Set jumlah halaman total
-      setCurrentPage(1); // Reset ke halaman pertama
+      setRestaurants(filteredRestaurants);
+      setTotalPages(fetchedTotalPages);
+      setCurrentPage(1);
     } catch (error) {
       console.error("Error fetching restaurants:", error);
     }
-  };  
+  };
 
   if (status === "loading") {
     return (
@@ -182,8 +183,8 @@ const HomePage = () => {
           <Image
             src="/images/resto1.jpg"
             alt="Food background"
-            layout="fill"
-            objectFit="cover"
+            fill
+            style={{ objectFit: "cover" }}
             quality={100}
           />
         </motion.div>
@@ -205,7 +206,7 @@ const HomePage = () => {
               <Input
                 type="text"
                 placeholder="Search for cuisines or restaurants"
-                className=" flex-grow w-64 md:w-80 pl-10 pr-4 py-2 rounded-full bg-white/10 backdrop-blur-md text-[#F8ECEC] placeholder-[#F8ECEC]/50 border-[#D9A5A5] focus:border-[#F8ECEC]"
+                className="flex-grow w-64 md:w-80 pl-10 pr-4 py-2 rounded-full bg-white/10 backdrop-blur-md text-[#F8ECEC] placeholder-[#F8ECEC]/50 border-[#D9A5A5] focus:border-[#F8ECEC]"
               />
               <Button className="bg-[#CDC69A] text-[#290102]">
                 <Search className="h-4 w-4 mr-2" />
@@ -219,21 +220,33 @@ const HomePage = () => {
                 </SelectTrigger>
                 <SelectContent className="bg-[#4A1414] text-[#F8ECEC]">
                   {cuisines.map((type) => (
-                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              <Select>
+
+              {/* Updated Average Cost Filter */}
+              <Select
+                onValueChange={(value) => {
+                  const [min, max] = value.split("-").map(Number);
+                  setPriceRange([min, max]);
+                }}
+              >
                 <SelectTrigger className="flex-grow bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5]">
-                  <SelectValue placeholder="Average Cost" />
+                  <SelectValue placeholder="Average Cost (50,000 - 249,900)" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#4A1414] text-[#F8ECEC]">
-                  <SelectItem value="low">$</SelectItem>
-                  <SelectItem value="medium">$$</SelectItem>
-                  <SelectItem value="high">$$$</SelectItem>
+                  <SelectItem value="50000-100000">50,000 - 100,000</SelectItem>
+                  <SelectItem value="100000-150000">100,000 - 150,000</SelectItem>
+                  <SelectItem value="150000-200000">150,000 - 200,000</SelectItem>
+                  <SelectItem value="200000-249900">200,000 - 249,900</SelectItem>
                 </SelectContent>
               </Select>
-              <Select>
+
+              {/* Distance (Not yet implemented in backend) */}
+              <Select onValueChange={(value) => setDistance(Number(value))}>
                 <SelectTrigger className="flex-grow bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5]">
                   <SelectValue placeholder="Distance" />
                 </SelectTrigger>
@@ -261,13 +274,13 @@ const HomePage = () => {
       {/* Explore Section */}
       <section id="explore" className="relative py-12 md:py-16 px-4 md:px-6">
         <h2 className="text-2xl md:text-3xl font-bold text-center mb-6 md:mb-8 text-[#D9D1BE]">
-          Explore Restaurants Near You
+          Explore Restaurants
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-10 max-w-5xl mx-auto">
           {restaurants.length > 0 ? (
             restaurants.map((restaurant, index) => (
               <motion.div
-                key={index}
+                key={restaurant.id}
                 initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -320,7 +333,7 @@ const HomePage = () => {
       <footer className="py-8 md:py-12 bg-[#2C0A0A] text-[#F8ECEC]/80">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {/* Footer sections */}
+            {/* Footer sections */}  
           </div>
           <div className="border-t border-[#F2E8D0]/20 mt-6 md:mt-8 pt-6 md:pt-8 text-center text-sm">
             <p>© 2024 DineSignal. All rights reserved.</p>

@@ -126,7 +126,7 @@ const LandingPage = () => {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#D9A5A5]" size={18} />
             </div>
             <Button
-              onClick={() => router.push("/auth")}
+              onClick={() => router.push("/signup")}
               className="bg-[#F2E8D0] text-[#4A1414] px-6 py-2 rounded-full font-bold text-lg shadow-lg hover:shadow-xl hover:bg-[#F8ECEC] transition duration-300"
             >
               Explore Now
