@@ -224,11 +224,11 @@ const LandingPage = () => {
             >
               <h3 className="text-2xl font-semibold mb-4 text-[#CDC69A]">Our Mission</h3>
               <p className="text-[#F8ECEC]/80 mb-6">
-                At DineSignal, we're passionate about connecting food lovers with their perfect dining experiences. Our mission is to make every meal an adventure, helping you discover new flavors and hidden gems in your area.
+                At DineSignal, we&apos;re passionate about connecting food lovers with their perfect dining experiences. Our mission is to make every meal an adventure, helping you discover new flavors and hidden gems in your area.
               </p>
               <h3 className="text-2xl font-semibold mb-4 text-[#CDC69A]">How We Do It</h3>
               <p className="text-[#F8ECEC]/80">
-                Using advanced algorithms and user preferences, we curate personalized recommendations that match your taste, budget, and location. Whether you're craving a quick bite or planning a special night out, DineSignal is your trusted companion in the world of culinary exploration.
+                Using advanced algorithms and user preferences, we curate personalized recommendations that match your taste, budget, and location. Whether you&apos;re craving a quick bite or planning a special night out, DineSignal is your trusted companion in the world of culinary exploration.
               </p>
             </motion.div>
             <motion.div

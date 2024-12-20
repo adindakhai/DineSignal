@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import prisma from "../../../../../prisma/prisma";
 
-export async function GET(_req: NextRequest) {
+export async function GET() { // Hapus _req
   try {
     const cuisines = await prisma.restaurants.findMany({
       select: { cuisines: true },
