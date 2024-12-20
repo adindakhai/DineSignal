@@ -42,6 +42,7 @@ const HomePage = () => {
   const [cuisines, setCuisines] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Lokasi user (misal hard-coded Jakarta)
   const userLatitude = -6.200000;
@@ -83,15 +84,16 @@ const HomePage = () => {
     signOut({ callbackUrl: "/" });
   };
 
-  const handlePageChange = async (newPage: number) => {
+  const fetchRestaurants = async (page: number) => {
     try {
       const queryParams = new URLSearchParams({
         cuisine: cuisineType || "",
         priceRange: priceRange.join("-"),
-        page: newPage.toString(),
+        page: page.toString(),
         distance: distance?.toString() || "",
         userLatitude: userLatitude.toString(),
         userLongitude: userLongitude.toString(),
+        searchTerm: searchTerm || "",
       }).toString();
 
       const response = await fetch(`/api/restaurants?${queryParams}`);
@@ -102,37 +104,22 @@ const HomePage = () => {
       const { restaurants: fetchedRestaurants, totalPages: fetchedTotalPages } = await response.json();
       setRestaurants(fetchedRestaurants);
       setTotalPages(fetchedTotalPages);
-      setCurrentPage(newPage);
+      setCurrentPage(page);
     } catch (error) {
       console.error("Error fetching restaurants:", error);
     }
   };
 
-  const handleFilter = async () => {
-    setRestaurants([]); // Clear current restaurant list before fetch
-    try {
-      const queryParams = new URLSearchParams({
-        cuisine: cuisineType || "",
-        priceRange: priceRange.join("-"),
-        page: "1",
-        distance: distance?.toString() || "",
-        userLatitude: userLatitude.toString(),
-        userLongitude: userLongitude.toString(),
-      }).toString();
+  const handlePageChange = (newPage: number) => {
+    fetchRestaurants(newPage);
+  };
 
-      const response = await fetch(`/api/restaurants?${queryParams}`);
-      if (!response.ok) {
-        throw new Error(`API responded with status ${response.status}: ${response.statusText}`);
-      }
+  const handleFilter = () => {
+    fetchRestaurants(1);
+  };
 
-      const { restaurants: fetchedRestaurants, totalPages: fetchedTotalPages } = await response.json();
-
-      setRestaurants(fetchedRestaurants);
-      setTotalPages(fetchedTotalPages);
-      setCurrentPage(1);
-    } catch (error) {
-      console.error("Error fetching restaurants:", error);
-    }
+  const handleSearch = () => {
+    fetchRestaurants(1);
   };
 
   if (status === "loading") {
@@ -206,10 +193,12 @@ const HomePage = () => {
             <div className="flex space-x-2">
               <Input
                 type="text"
-                placeholder="Search for cuisines or restaurants"
+                placeholder="Search for city or restaurant name"
                 className="flex-grow w-64 md:w-80 pl-10 pr-4 py-2 rounded-full bg-white/10 backdrop-blur-md text-[#F8ECEC] placeholder-[#F8ECEC]/50 border-[#D9A5A5] focus:border-[#F8ECEC]"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
-              <Button className="bg-[#CDC69A] text-[#290102]">
+              <Button className="bg-[#CDC69A] text-[#290102]" onClick={handleSearch}>
                 <Search className="h-4 w-4 mr-2" />
                 Search
               </Button>

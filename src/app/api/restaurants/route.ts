@@ -18,29 +18,40 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const cuisine = searchParams.get("cuisine") || undefined;
   const priceRange = searchParams.get("priceRange")?.split("-").map(Number);
-  const city = searchParams.get("city") || undefined;
-  const page = parseInt(searchParams.get("page") || "1", 10);
   const distance = searchParams.get("distance") ? Number(searchParams.get("distance")) : undefined;
   const userLat = searchParams.get("userLatitude") ? Number(searchParams.get("userLatitude")) : undefined;
   const userLon = searchParams.get("userLongitude") ? Number(searchParams.get("userLongitude")) : undefined;
+  const page = parseInt(searchParams.get("page") || "1", 10);
+  const searchTerm = searchParams.get("searchTerm") || undefined;
 
   const limit = 20;
 
   try {
-    // Ambil semua restoran sesuai filter cuisine, priceRange, city
+    // Build where clause
+    let whereClause: any = {};
+
+    if (cuisine) {
+      whereClause.cuisines = { contains: cuisine, mode: "insensitive" };
+    }
+
+    if (priceRange) {
+      whereClause.average_cost = { gte: priceRange[0], lte: priceRange[1] };
+    }
+
+    // If we have a searchTerm, filter by city OR name
+    if (searchTerm) {
+      whereClause.OR = [
+        { city: { contains: searchTerm, mode: "insensitive" } },
+        { name: { contains: searchTerm, mode: "insensitive" } },
+      ];
+    }
+
     const allRestaurants = await prisma.restaurants.findMany({
-      where: {
-        cuisines: cuisine ? { contains: cuisine, mode: "insensitive" } : undefined,
-        average_cost: priceRange
-          ? { gte: priceRange[0], lte: priceRange[1] }
-          : undefined,
-        city: city ? { contains: city, mode: "insensitive" } : undefined,
-      },
+      where: whereClause,
     });
 
-    // Filter berdasarkan distance jika distance, userLat, userLon ada
+    // Filter by distance if provided
     let filteredRestaurants = allRestaurants;
-
     if (distance && userLat !== undefined && userLon !== undefined) {
       filteredRestaurants = allRestaurants.filter((resto) => {
         if (resto.latitude == null || resto.longitude == null) return false;
@@ -52,7 +63,7 @@ export async function GET(req: NextRequest) {
     const totalCount = filteredRestaurants.length;
     const totalPages = Math.ceil(totalCount / limit);
 
-    // Pagination setelah filtering
+    // Pagination
     const offset = (page - 1) * limit;
     const paginatedRestaurants = filteredRestaurants.slice(offset, offset + limit);
 
@@ -66,9 +77,6 @@ export async function GET(req: NextRequest) {
     );
   } catch (error) {
     console.error("Error fetching restaurants:", error);
-    return NextResponse.json(
-      { message: "Failed to fetch restaurants" },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Failed to fetch restaurants" }, { status: 500 });
   }
 }
