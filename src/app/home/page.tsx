@@ -36,12 +36,16 @@ const HomePage = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [cuisineType, setCuisineType] = useState("");
-  const [priceRange, setPriceRange] = useState([50000, 249900]); // default full range sesuai permintaan
-  const [distance, setDistance] = useState(5);
+  const [priceRange, setPriceRange] = useState([50000, 249900]); // default full range
+  const [distance, setDistance] = useState<number | undefined>(undefined);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [cuisines, setCuisines] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  // Lokasi user (misal hard-coded Jakarta)
+  const userLatitude = -6.200000;
+  const userLongitude = 106.816666;
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -85,6 +89,9 @@ const HomePage = () => {
         cuisine: cuisineType || "",
         priceRange: priceRange.join("-"),
         page: newPage.toString(),
+        distance: distance?.toString() || "",
+        userLatitude: userLatitude.toString(),
+        userLongitude: userLongitude.toString(),
       }).toString();
 
       const response = await fetch(`/api/restaurants?${queryParams}`);
@@ -108,6 +115,9 @@ const HomePage = () => {
         cuisine: cuisineType || "",
         priceRange: priceRange.join("-"),
         page: "1",
+        distance: distance?.toString() || "",
+        userLatitude: userLatitude.toString(),
+        userLongitude: userLongitude.toString(),
       }).toString();
 
       const response = await fetch(`/api/restaurants?${queryParams}`);
@@ -117,16 +127,7 @@ const HomePage = () => {
 
       const { restaurants: fetchedRestaurants, totalPages: fetchedTotalPages } = await response.json();
 
-      // Frontend filter jika perlu (sebenarnya backend sudah filter)
-      const filteredRestaurants = fetchedRestaurants.filter((restaurant: Restaurant) =>
-        !cuisineType ||
-        restaurant.cuisines
-          ?.split(",")
-          .map((cuisine) => cuisine.trim().toLowerCase())
-          .includes(cuisineType.toLowerCase())
-      );
-
-      setRestaurants(filteredRestaurants);
+      setRestaurants(fetchedRestaurants);
       setTotalPages(fetchedTotalPages);
       setCurrentPage(1);
     } catch (error) {
@@ -227,7 +228,7 @@ const HomePage = () => {
                 </SelectContent>
               </Select>
 
-              {/* Updated Average Cost Filter */}
+              {/* Average Cost Filter */}
               <Select
                 onValueChange={(value) => {
                   const [min, max] = value.split("-").map(Number);
@@ -245,7 +246,7 @@ const HomePage = () => {
                 </SelectContent>
               </Select>
 
-              {/* Distance (Not yet implemented in backend) */}
+              {/* Distance */}
               <Select onValueChange={(value) => setDistance(Number(value))}>
                 <SelectTrigger className="flex-grow bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5]">
                   <SelectValue placeholder="Distance" />
@@ -333,7 +334,7 @@ const HomePage = () => {
       <footer className="py-8 md:py-12 bg-[#2C0A0A] text-[#F8ECEC]/80">
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {/* Footer sections */}  
+            {/* Footer sections */}
           </div>
           <div className="border-t border-[#F2E8D0]/20 mt-6 md:mt-8 pt-6 md:pt-8 text-center text-sm">
             <p>© 2024 DineSignal. All rights reserved.</p>

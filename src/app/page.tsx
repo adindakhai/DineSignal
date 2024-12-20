@@ -238,7 +238,7 @@ const LandingPage = () => {
               className="relative h-[400px] rounded-lg overflow-hidden"
             >
               <Image
-                src="/images/about-us.jpg"
+                src="/images/resto1.jpg"
                 alt="About DineSignal"
                 layout="fill"
                 objectFit="cover"
