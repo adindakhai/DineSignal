@@ -36,7 +36,7 @@ const HomePage = () => {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [cuisineType, setCuisineType] = useState("");
-  const [priceRange, setPriceRange] = useState([50000, 249900]); // default full range
+  const [priceRange, setPriceRange] = useState<string>("all"); // Menggunakan string kosong sebagai default
   const [distance, setDistance] = useState<number | undefined>(undefined);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [cuisines, setCuisines] = useState<string[]>([]);
@@ -97,23 +97,23 @@ const HomePage = () => {
       setCurrentPage(1);
       return;
     }
-
+  
     try {
       const queryParams = new URLSearchParams({
         cuisine: cuisineType || "",
-        priceRange: priceRange.join("-"),
+        priceRange: priceRange || "",
         page: page.toString(),
         distance: distance?.toString() || "",
         userLatitude: userLatitude.toString(),
         userLongitude: userLongitude.toString(),
         searchTerm: searchTerm || "",
       }).toString();
-
+  
       const response = await fetch(`/api/restaurants?${queryParams}`);
       if (!response.ok) {
         throw new Error(`API responded with status ${response.status}: ${response.statusText}`);
       }
-
+  
       const { restaurants: fetchedRestaurants, totalPages: fetchedTotalPages } = await response.json();
       setRestaurants(fetchedRestaurants);
       setTotalPages(fetchedTotalPages);
@@ -122,6 +122,7 @@ const HomePage = () => {
       console.error("Error fetching restaurants:", error);
     }
   };
+  
 
   const handlePageChange = (newPage: number) => {
     fetchRestaurants(newPage);
@@ -138,7 +139,7 @@ const HomePage = () => {
   // **Updated Function: Handle Clear Filters**
   const handleClearFilter = () => {
     setCuisineType("");
-    setPriceRange([50000, 249900]);
+    setPriceRange("");    
     setDistance(undefined);
     setSearchTerm("");
     setSuggestions([]);
@@ -151,11 +152,11 @@ const HomePage = () => {
 
   // **New Variable: Check if Any Filter is Applied**
   const isFilterApplied =
-    cuisineType !== "" ||
-    priceRange[0] !== 50000 ||
-    priceRange[1] !== 249900 ||
-    distance !== undefined ||
-    searchTerm.trim() !== "";
+  cuisineType !== "" ||
+  priceRange !== "" ||
+  distance !== undefined ||
+  searchTerm.trim() !== "";
+
 
   // **New useEffect: Handle Search Suggestions with Debouncing**
   useEffect(() => {
@@ -336,18 +337,22 @@ const HomePage = () => {
                   ))}
                 </SelectContent>
               </Select>
-
               <Select
-                onValueChange={(value) => {
-                  const [min, max] = value.split("-").map(Number);
-                  setPriceRange([min, max]);
+              onValueChange={(value) => {
+                  if (value === "all") {
+                    setPriceRange("all");
+                  } else {
+                    const [min, max] = value.split("-").map(Number);
+                    setPriceRange(`${min}-${max}`);
+                  }
                 }}
-                value={priceRange.join("-")}
+                value={priceRange}
               >
                 <SelectTrigger className="flex-grow bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5] hover:border-[#CDC69A] transition-colors duration-300">
-                  <SelectValue placeholder="Average Cost (50,000 - 249,900)" />
+                  <SelectValue placeholder="Average Cost" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#4A1414] text-[#F8ECEC] border-[#D9A5A5]">
+                  <SelectItem value="all">Average</SelectItem> {/* Opsi "Semua" dengan value "all" */}
                   <SelectItem value="50000-100000">50,000 - 100,000</SelectItem>
                   <SelectItem value="100000-150000">100,000 - 150,000</SelectItem>
                   <SelectItem value="150000-200000">150,000 - 200,000</SelectItem>
