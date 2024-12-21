@@ -507,7 +507,9 @@ const HomePage = () => {
                     )}
                   </CardContent>
                   <CardFooter className="p-6 pt-0">
-                    <Button className="w-full bg-[#430d0e] text-[#D9D1BE] rounded-full font-bold hover:bg-[#a2725c] transition duration-300">
+                    <Button className="w-full bg-[#430d0e] text-[#D9D1BE] rounded-full font-bold hover:bg-[#a2725c] transition duration-300"
+                    onClick={() => router.push(`/restaurants/${restaurant.id}`)}
+                    >
                       View Details
                     </Button>
                   </CardFooter>
