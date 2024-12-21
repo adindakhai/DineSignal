@@ -23,6 +23,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search } from "lucide-react"; // `MapPin` removed as it is not used.
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+} from "@/components/ui/sheet";
+import { Label } from "@/components/ui/label";
 
 interface Restaurant {
   id: number;
@@ -53,6 +61,10 @@ const HomePage = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [name, setName] = useState(session?.user?.name || "");
+  const [email, setEmail] = useState(session?.user?.email || "");
+  const [password, setPassword] = useState("");
 
   // **New States for Search Suggestions**
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -68,6 +80,29 @@ const HomePage = () => {
       router.push("/auth");
     }
   }, [status, router]);
+
+  const handleSaveProfile = async () => {
+    try {
+      const response = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, email, password }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update profile: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      alert("Profile updated successfully!");
+      setIsSheetOpen(false);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      alert("Failed to update profile.");
+    }
+  };
 
   useEffect(() => {
     const fetchCuisines = async () => {
@@ -234,6 +269,65 @@ const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-black bg-opacity-50 text-[#F8ECEC] font-sans">
+      {/* Sheet untuk Edit Profile */}
+      <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+        <SheetContent>
+          <SheetHeader>
+            <SheetTitle>Edit Profile</SheetTitle>
+          </SheetHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="name" className="text-[#F8ECEC]">
+                Name
+              </Label>
+              <Input
+                id="name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="Enter your name"
+                className="mt-2"
+              />
+            </div>
+            <div>
+              <Label htmlFor="email" className="text-[#F8ECEC]">
+                Email
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                className="mt-2"
+              />
+            </div>
+            <div>
+              <Label htmlFor="password" className="text-[#F8ECEC]">
+                New Password
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter new password"
+                className="mt-2"
+              />
+            </div>
+          </div>
+
+          <SheetFooter>
+            <Button
+              onClick={handleSaveProfile}
+              className="bg-[#CDC69A] text-[#290102] hover:bg-[#D9D1BE]"
+            >
+              Save Changes
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+
       {/* Header */}
       <motion.header
         className="sticky top-0 mx-auto bg-opacity-50 backdrop-blur-md bg-[#4A1414] z-50 px-6 py-4 shadow-lg"
@@ -255,13 +349,25 @@ const HomePage = () => {
             </span>
           </div>
 
-          <Button
-            onClick={handleLogout}
-            variant="ghost"
-            className="text-[#F8ECEC] hover:text-[#CDC69A] transition duration-300 text-sm md:text-base mt-4 md:mt-0"
-          >
-            Log Out
-          </Button>
+          {/* Buttons Container */}
+          <div className="flex items-center space-x-4 mt-4 md:mt-0">
+            {/* Edit Profile Button */}
+            <Button
+              onClick={() => setIsSheetOpen(true)}
+              className="bg-[#CDC69A] text-[#290102] hover:bg-[#D9D1BE] transition-colors duration-300"
+            >
+              Edit Profile
+            </Button>
+
+            {/* Log Out Button */}
+            <Button
+              onClick={handleLogout}
+              variant="ghost"
+              className="text-[#F8ECEC] hover:text-[#CDC69A] transition duration-300 text-sm md:text-base"
+            >
+              Log Out
+            </Button>
+          </div>
         </div>
       </motion.header>
 
@@ -469,8 +575,8 @@ const HomePage = () => {
                       <Image
                         src="/images/resto1.jpg" // Replace with restaurant image if available
                         alt={restaurant.name}
-                        layout="fill"
-                        objectFit="cover"
+                        fill
+                        style={{ objectFit: "cover" }}
                         className="rounded-t-lg"
                         priority={index === 0} // Prioritize the first image
                       />
@@ -507,8 +613,9 @@ const HomePage = () => {
                     )}
                   </CardContent>
                   <CardFooter className="p-6 pt-0">
-                    <Button className="w-full bg-[#430d0e] text-[#D9D1BE] rounded-full font-bold hover:bg-[#a2725c] transition duration-300"
-                    onClick={() => router.push(`/restaurants/${restaurant.id}`)}
+                    <Button
+                      className="w-full bg-[#430d0e] text-[#D9D1BE] rounded-full font-bold hover:bg-[#a2725c] transition duration-300"
+                      onClick={() => router.push(`/restaurants/${restaurant.id}`)}
                     >
                       View Details
                     </Button>
