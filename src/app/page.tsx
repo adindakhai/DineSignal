@@ -35,7 +35,7 @@ const LandingPage = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-[#2C0A0A] text-[#F8ECEC] font-sans">
+    <div className="min-h-screen bg-[#00000] bg-opacity-50 text-[#F8ECEC] font-sans">
       {/* Header */}
       <motion.header
         className="sticky top-0 mx-auto bg-opacity-90 backdrop-blur-md bg-[#4A1414] z-50 px-6 py-4 shadow-lg"
@@ -199,7 +199,8 @@ const LandingPage = () => {
                   </div>
                 </CardContent>
                 <CardFooter className="p-6 pt-0">
-                  <Button className="w-full bg-[#430d0e] text-[#D9D1BE] rounded-full font-bold hover:bg-[#a2725c] transition duration-300">
+                  <Button className="w-full bg-[#430d0e] text-[#D9D1BE] rounded-full font-bold hover:bg-[#a2725c] transition duration-300"
+                  onClick={() => router.push("/signup")}>
                     Explore Menu
                   </Button>
                 </CardFooter>
@@ -255,9 +256,9 @@ const LandingPage = () => {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center space-x-2 mb-4">
-                <ChefHat className="h-8 w-8 text-[#D9A5A5]" />
+                <ChefHat className="h-8 w-8 text-[#ffebbc]" />
                 <span className="text-2xl font-bold tracking-wider text-[#F8ECEC]">
-                  Dine<span className="text-[#D9A5A5]">Signal</span>
+                  Dine<span className="text-[#ffebbc]">Signal</span>
                 </span>
               </div>
               <p className="text-sm text-[#F8ECEC]/80">Discover and enjoy the best dining experiences tailored just for you.</p>
