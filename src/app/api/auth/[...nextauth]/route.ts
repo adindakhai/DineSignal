@@ -1,10 +1,13 @@
+// src/app/api/auth/[...nextauth]/route.ts
+
 import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prismadb";
 import { compare } from "bcryptjs";
 
-export const authOptions: AuthOptions = {
+// Definisikan authOptions di file terpisah jika diperlukan
+const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -41,25 +44,25 @@ export const authOptions: AuthOptions = {
         }
 
         console.log("User logged in successfully:", user);
-        return user; // This will include the user object in the JWT payload
+        return user; // Ini akan menyertakan objek user dalam payload JWT
       },
     }),
   ],
   session: {
-    strategy: "jwt", // Use JWT for session handling
+    strategy: "jwt", // Gunakan JWT untuk penanganan sesi
   },
   callbacks: {
     async jwt({ token, user }) {
-      // Add custom claims to the token
+      // Tambahkan klaim kustom ke token
       if (user) {
-        token.id = user.id; // Add the user ID to the token
-        token.name = user.name; // Include the user's name
-        token.email = user.email; // Include the user's email
+        token.id = user.id; // Tambahkan ID pengguna ke token
+        token.name = user.name; // Sertakan nama pengguna
+        token.email = user.email; // Sertakan email pengguna
       }
       return token;
     },
     async session({ session, token }) {
-      // Attach the token's information to the session object
+      // Lampirkan informasi token ke objek sesi
       if (token) {
         session.user = {
           name: token.name,
@@ -70,17 +73,14 @@ export const authOptions: AuthOptions = {
     },
   },
   jwt: {
-    secret: process.env.JWT_SECRET, // Use a secure secret key from your .env file
-    maxAge: 60 * 60 * 24 * 7, // Token valid for 7 days
+    secret: process.env.JWT_SECRET, // Gunakan kunci rahasia yang aman dari file .env Anda
+    maxAge: 60 * 60 * 24 * 7, // Token berlaku selama 7 hari
   },
-  debug: true, // Enable debug mode
+  debug: true, // Aktifkan mode debug
 };
 
-// Handler untuk App Router
-import { NextApiHandler } from "next";
+// Inisialisasi handler NextAuth
+const handler = NextAuth(authOptions);
 
-const handler: NextApiHandler = NextAuth(authOptions);
-
-// Ekspor handler untuk metode HTTP
-export const GET = handler;
-export const POST = handler;
+// Ekspor hanya metode GET dan POST
+export { handler as GET, handler as POST };
